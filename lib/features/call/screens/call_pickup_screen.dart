@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/features/call/controller/call_controller.dart';
-
 import '../../../model/call.dart';
+import 'call_screen.dart';
 class CallPickupScreen extends ConsumerWidget {
   final Widget scaffold;
   const CallPickupScreen({super.key,
@@ -52,7 +52,7 @@ class CallPickupScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () => ref.read(callControllerProvider).rejectCall(context),
                           icon: const Icon(
                             Icons.call_end,
                             color: Colors.redAccent,
@@ -61,7 +61,13 @@ class CallPickupScreen extends ConsumerWidget {
                         ),
                         const SizedBox(width: 25),
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.pushNamed(context, CallScreen.routeName, arguments: {
+                              'channelId' : call.callerId,
+                              'call' : call,
+                              'isGroupChat' : false,
+                            });
+                          },
                           icon: const Icon(
                             Icons.call,
                             color: Colors.green,

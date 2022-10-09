@@ -57,19 +57,28 @@ class CallController {
         hasDialled: false,
       );
       if (isGroupChat) {
-        // callRepository.makeGroupCall(senderCallData, context, receiverCallData);
+        callRepository.makeGroupCall(senderCallData: senderCallData, context: context, receiverCallData: receiverCallData);
       } else {
         callRepository.makeCall(senderCallData: senderCallData, context: context, receiverCallData: receiverCallData);
       }
     });
   }
 
-  // void endCall(
-  //     String callerId,
-  //     String receiverId,
-  //     BuildContext context,
-  //     ) {
-  //   callRepository.endCall(callerId, receiverId, context);
-  // }
+  void endCall({
+    required String callerId,
+    required String receiverId,
+    required BuildContext context,
+    required bool isGroupChat,
+  }) {
+    if(isGroupChat){
+      callRepository.endGroupCall(callerId: callerId, receiverId: receiverId, context: context);
+    }else {
+      callRepository.endCall(callerId: callerId, receiverId: receiverId, context: context);
+    }
+  }
+
+  void rejectCall(BuildContext context) {
+      callRepository.rejectCall(receiverId: auth.currentUser!.uid, context: context);
+  }
 }
 //

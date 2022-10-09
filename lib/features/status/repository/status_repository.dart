@@ -136,8 +136,10 @@ class StatusRepository{
                 listStatusIds.add(statusId['statusId']);
               }
             }
-            UserStatus userStatus = UserStatus(name: user.name, profilePic: user.profilePic, photoUrl: photoUrl, statusId: listStatusIds, uid: userUid);
-            userStatusData.add(userStatus);
+            if(photoUrl.isNotEmpty && listStatusIds.isNotEmpty){
+              UserStatus userStatus = UserStatus(name: user.name, profilePic: user.profilePic, photoUrl: photoUrl, statusId: listStatusIds, uid: userUid);
+              userStatusData.add(userStatus);
+            }
           }
       }
     }catch(e){
