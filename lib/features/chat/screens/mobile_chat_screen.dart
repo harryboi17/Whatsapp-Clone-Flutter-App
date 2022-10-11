@@ -63,6 +63,7 @@ class MobileChatScreen extends ConsumerWidget {
                           fontSize: 13,
                           fontWeight: FontWeight.normal,
                         ),
+                        maxLines: 1,
                       ),
                     );
                   },

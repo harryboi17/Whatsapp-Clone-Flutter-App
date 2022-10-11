@@ -77,9 +77,6 @@ class _ChatListState extends ConsumerState<ChatList> {
                 itemBuilder: (context, index) {
                   final messageData = snapshot.data![index];
                   var timeSent = DateFormat.jm().format(messageData.timeSent);
-                  String repliedMessage = messageData.text.length > 70
-                      ? "${messageData.text.substring(0, 70)}..."
-                      : messageData.text;
 
                   List<String> seenSet = messageData.seenBy;
                   if(!seenSet.contains(FirebaseAuth.instance.currentUser!.uid)) {
@@ -97,9 +94,7 @@ class _ChatListState extends ConsumerState<ChatList> {
                       userName: messageData.repliedTo,
                       repliedMessageType: messageData.repliedMessageType,
                       onSwipe: () => onMessageSwipe(
-                          message: messageData.type == MessageEnum.text
-                              ? repliedMessage
-                              : messageData.text,
+                          message: messageData.text,
                           isMe: true,
                           messageEnum: messageData.type),
                       // isSeen: messageData.seenBy.length == widget.numberOfMembers,
@@ -114,9 +109,7 @@ class _ChatListState extends ConsumerState<ChatList> {
                     userName: messageData.repliedTo,
                     repliedMessageType: messageData.repliedMessageType,
                     onSwipe: () => onMessageSwipe(
-                      message: messageData.type == MessageEnum.text
-                          ? repliedMessage
-                          : messageData.text,
+                      message: messageData.text,
                       isMe: false,
                       messageEnum: messageData.type,
                     ),
@@ -174,9 +167,7 @@ class _ChatListState extends ConsumerState<ChatList> {
                       userName: messageData.repliedTo,
                       repliedMessageType: messageData.repliedMessageType,
                       onSwipe: () => onMessageSwipe(
-                          message: messageData.type == MessageEnum.text
-                              ? repliedMessage
-                              : messageData.text,
+                          message: messageData.text,
                           isMe: true,
                           messageEnum: messageData.type),
                       isSeen: messageData.isSeen,
@@ -190,9 +181,7 @@ class _ChatListState extends ConsumerState<ChatList> {
                     userName: messageData.repliedTo,
                     repliedMessageType: messageData.repliedMessageType,
                     onSwipe: () => onMessageSwipe(
-                      message: messageData.type == MessageEnum.text
-                          ? repliedMessage
-                          : messageData.text,
+                      message: messageData.text,
                       isMe: false,
                       messageEnum: messageData.type,
                     ),

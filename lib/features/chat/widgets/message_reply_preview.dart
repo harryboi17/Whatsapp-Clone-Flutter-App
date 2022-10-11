@@ -47,11 +47,14 @@ class MessageReplyPreview extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   messageReply.messageEnum == MessageEnum.text
-                      ? DisplayTextFile(
-                        message: messageReply.message,
-                        type: messageReply.messageEnum,
-                        color: Colors.grey,
-                        size: 14,
+                      ? Text(
+                          messageReply.message,
+                          style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                       )
                       : Text(
                           displayMessageForMessageType(messageReply.messageEnum),

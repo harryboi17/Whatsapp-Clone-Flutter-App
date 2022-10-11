@@ -37,10 +37,9 @@ class StatusRepository{
       if(await FlutterContacts.requestPermission()){
         contacts = await FlutterContacts.getContacts(withProperties: true);
       }
-
       List<String> uidWhoCanSee = [];
       for(int i = 0; i < contacts.length; i++){
-        if(contacts[i].phones.isNotEmpty && contacts[i].phones[0].number.replaceAll(' ', '') != auth.currentUser!.phoneNumber) {
+        if(contacts[i].phones.isNotEmpty && contacts[i].phones[0].number.replaceAll(' ', '')  != auth.currentUser!.phoneNumber) {
           var userDataFireBase = await fireStore.collection('users').where(
               'phoneNumber',
               isEqualTo: contacts[i].phones[0].number.replaceAll(' ', '')
@@ -49,11 +48,10 @@ class StatusRepository{
           if (userDataFireBase.docs.isNotEmpty) {
             var userData = UserModel.fromMap(userDataFireBase.docs[0].data());
             uidWhoCanSee.add(userData.uid);
-
             List<Map<String, dynamic>> statusIds = [];
             var statusIdsSnapshot =  await fireStore.collection('users').doc(userData.uid).collection('statuses').doc(uid).get();
             if(statusIdsSnapshot.exists){
-              statusIds = List<Map<String, String>>.from(statusIdsSnapshot.data()!['statusIds']);
+              statusIds = List<Map<String, dynamic>>.from(statusIdsSnapshot.data()!['statusIds']);
               statusIds.add({
                 'statusId' : statusId,
                 'isSeen' : false
@@ -127,7 +125,7 @@ class StatusRepository{
           
           List<String> photoUrl = [];
           List<String> listStatusIds = [];
-          if(statusIds.isNotEmpty){
+          if(statusIds.isNotEmpty  && user.uid != auth.currentUser!.uid){
             for(var statusId in statusIds){
               var statusDataSnapshot = await fireStore.collection('status').doc(statusId['statusId']).get();
               Status statusData = Status.fromMap(statusDataSnapshot.data()!);

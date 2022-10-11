@@ -62,6 +62,8 @@ class ContactsList extends ConsumerWidget {
                                         fontSize: 15,
                                         color: groupData.isTyping ? unSeenMessageColor : null
                                     ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                                 leading: CircleAvatar(
@@ -149,6 +151,8 @@ class ContactsList extends ConsumerWidget {
                                         fontSize: 15,
                                         color: chatContactData.isTyping ? unSeenMessageColor : null
                                     ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                                 leading: CircleAvatar(

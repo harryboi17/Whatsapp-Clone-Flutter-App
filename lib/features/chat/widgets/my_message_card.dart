@@ -71,11 +71,14 @@ class MyMessageCard extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 4,),
                                       repliedMessageType == MessageEnum.text
-                                          ? DisplayTextFile(
-                                            message: repliedText.length > 70  ? "${repliedText.substring(0,70)}..." : repliedText,
-                                            type: repliedMessageType,
-                                            color: Colors.grey,
-                                            size: MediaQuery.of(context).size.height/64,
+                                          ? Text(
+                                            repliedText,
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: MediaQuery.of(context).size.height/64,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
                                           )
                                           : DisplayTextFile(
                                               message: displayMessageForMessageType(repliedMessageType),
