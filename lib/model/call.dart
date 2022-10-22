@@ -7,6 +7,11 @@ class Call {
   final String receiverPic;
   final String callId;
   final bool hasDialled;
+  final bool isGroupCall;
+  final DateTime callTime;
+  final bool isMissedCall;
+  final bool isVideoCall;
+
 
   const Call({
     required this.callerId,
@@ -17,6 +22,10 @@ class Call {
     required this.receiverPic,
     required this.callId,
     required this.hasDialled,
+    required this.isGroupCall,
+    required this.isMissedCall,
+    required this.isVideoCall,
+    required this.callTime,
   });
 
   Map<String, dynamic> toMap() {
@@ -29,6 +38,10 @@ class Call {
       'receiverPic': receiverPic,
       'callId': callId,
       'hasDialled': hasDialled,
+      'isGroupCall': isGroupCall,
+      'callTime': callTime.millisecondsSinceEpoch,
+      'isMissedCall': isMissedCall,
+      'isVideoCall': isVideoCall,
     };
   }
 
@@ -42,6 +55,10 @@ class Call {
       receiverPic: map['receiverPic'] as String,
       callId: map['callId'] as String,
       hasDialled: map['hasDialled'] as bool,
+      isGroupCall: map['isGroupCall'] as bool,
+      callTime: DateTime.fromMillisecondsSinceEpoch(map['callTime']),
+      isMissedCall: map['isMissedCall'] as bool,
+      isVideoCall: map['isVideoCall'] as bool,
     );
   }
 }

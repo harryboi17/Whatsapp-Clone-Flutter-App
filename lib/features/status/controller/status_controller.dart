@@ -33,9 +33,12 @@ class StatusController {
     });
   }
 
-  Future<List<UserStatus>> getStatus(BuildContext context) async {
-    List<UserStatus> statuses = await statusRepository.getStatus(context);
-    return statuses;
+  Stream<List<UserStatus>> getStatus(BuildContext context, bool isSeenStatusColumn){
+    return statusRepository.getStatus(context, isSeenStatusColumn);
+  }
+
+  Stream<UserStatus> getMyStatus(BuildContext context){
+    return statusRepository.getMyStatus(context);
   }
 
   void updateIsSeen(String uid, String statusId){

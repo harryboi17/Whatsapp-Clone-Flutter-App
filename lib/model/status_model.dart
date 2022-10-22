@@ -38,6 +38,8 @@ class UserStatus{
   final String profilePic;
   final List<String> statusId;
   final List<String> photoUrl;
+  final List<bool> isSeenStatus;
+  final DateTime lastUploadedStatusTime;
 
   UserStatus({
     required this.name,
@@ -45,6 +47,8 @@ class UserStatus{
     required this.profilePic,
     required this.photoUrl,
     required this.statusId,
+    required this.isSeenStatus,
+    required this.lastUploadedStatusTime,
   });
 
   Map<String, dynamic> toMap() {
@@ -54,6 +58,8 @@ class UserStatus{
       'profilePic': profilePic,
       'statusId' : statusId,
       'uid' : uid,
+      'isSeenStatus' : isSeenStatus,
+      'lastUploadedStatusTime' : lastUploadedStatusTime,
     };
   }
 
@@ -64,6 +70,8 @@ class UserStatus{
       photoUrl: List<String>.from(map['photoUrl']),
       statusId: List<String>.from(map['statusId']),
       profilePic: map['profilePic'],
+      isSeenStatus: List<bool>.from(map['isSeenStatus']),
+      lastUploadedStatusTime: map['lastUploadedStatusTime'] ?? '',
     );
   }
 }

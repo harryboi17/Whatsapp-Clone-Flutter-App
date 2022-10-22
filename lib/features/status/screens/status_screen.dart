@@ -37,9 +37,11 @@ class _StatusScreenState extends ConsumerState<StatusScreen> {
 
   void initStoryPageItems() {
     for (int i = 0; i < widget.status.photoUrl.length; i++) {
+      bool shown = widget.status.isSeenStatus[i];
       storyItems.add(StoryItem.pageImage(
         url: widget.status.photoUrl[i],
         controller: controller,
+        shown: shown,
       ));
     }
   }

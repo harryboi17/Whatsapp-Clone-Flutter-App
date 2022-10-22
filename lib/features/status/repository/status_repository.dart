@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:whatsapp_clone/common/repository/firebase_storage_repository.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
+import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 
 import '../../../model/status_model.dart';
 import '../../../model/user_model.dart';
@@ -110,43 +111,87 @@ class StatusRepository{
     }
   }
 
-  Future<List<UserStatus>> getStatus(BuildContext context) async{
-    List<UserStatus> userStatusData = [];
-    try{
-      var dataSnapshot = await fireStore.collection('users').doc(auth.currentUser!.uid).collection('statuses').get();
-      for(var document in dataSnapshot.docs){
-          String userUid = document.data()['userId'];
-          List<Map<String, dynamic>> statusIds = List<Map<String, dynamic>>.from(document.data()['statusIds']);
-          var userData = await fireStore
-              .collection('users')
-              .doc(userUid)
-              .get();
-          var user = UserModel.fromMap(userData.data()!);
-          
-          List<String> photoUrl = [];
-          List<String> listStatusIds = [];
-          if(statusIds.isNotEmpty  && user.uid != auth.currentUser!.uid){
-            for(var statusId in statusIds){
-              var statusDataSnapshot = await fireStore.collection('status').doc(statusId['statusId']).get();
-              Status statusData = Status.fromMap(statusDataSnapshot.data()!);
-              if(statusData.createdAt.isAfter(DateTime.now().subtract(const Duration(hours: 24)))) {
-                photoUrl.add(statusData.photoUrl);
-                listStatusIds.add(statusId['statusId']);
+  Stream<List<UserStatus>> getStatus(BuildContext context, bool isSeenStatusColumn){
+    return fireStore.collection('users').doc(auth.currentUser!.uid).collection('statuses').snapshots().asyncMap((event) async{
+      List<UserStatus> userStatusData = [];
+      List<UserStatus> seenUserStatusData = [];
+      for(var document in event.docs){
+        String userUid = document.data()['userId'];
+        List<Map<String, dynamic>> statusIds = List<Map<String, dynamic>>.from(document.data()['statusIds']);
+        var userData = await fireStore
+            .collection('users')
+            .doc(userUid)
+            .get();
+        var user = UserModel.fromMap(userData.data()!);
+
+        List<String> photoUrl = [];
+        List<String> listStatusIds = [];
+        List<bool> isSeenStatus = [];
+        int seenStatusIdCount = 0;
+        DateTime lastUploadedStatusTime = DateTime(0);
+        if(statusIds.isNotEmpty && user.uid != auth.currentUser!.uid){
+          for(var statusId in statusIds){
+            var statusDataSnapshot = await fireStore.collection('status').doc(statusId['statusId']).get();
+            Status statusData = Status.fromMap(statusDataSnapshot.data()!);
+            if(statusData.createdAt.isAfter(DateTime.now().subtract(const Duration(hours: 24)))) {
+              photoUrl.add(statusData.photoUrl);
+              listStatusIds.add(statusId['statusId']);
+              isSeenStatus.add(statusId['isSeen']);
+              if(statusData.createdAt.isAfter(lastUploadedStatusTime)) {
+                lastUploadedStatusTime = statusData.createdAt;
               }
-            }
-            if(photoUrl.isNotEmpty && listStatusIds.isNotEmpty){
-              UserStatus userStatus = UserStatus(name: user.name, profilePic: user.profilePic, photoUrl: photoUrl, statusId: listStatusIds, uid: userUid);
-              userStatusData.add(userStatus);
+              if(statusId['isSeen']){seenStatusIdCount += 1;}
             }
           }
+          if(photoUrl.isNotEmpty && listStatusIds.isNotEmpty){
+            UserStatus userStatus = UserStatus(name: user.name, profilePic: user.profilePic, photoUrl: photoUrl, statusId: listStatusIds,
+                uid: userUid, isSeenStatus: isSeenStatus, lastUploadedStatusTime: lastUploadedStatusTime);
+            if(seenStatusIdCount != listStatusIds.length) {
+              userStatusData.add(userStatus);
+            }
+            else{
+              seenUserStatusData.add(userStatus);
+            }
+          }
+        }
       }
-    }catch(e){
-      if(kDebugMode) print(e);
-      showSnackBar(context: context, content: e.toString());
-    }
-    return userStatusData;
+      if(isSeenStatusColumn) {
+        return seenUserStatusData;
+      } else {
+        return userStatusData;
+      }
+    });
   }
-  
+
+  Stream<UserStatus> getMyStatus(BuildContext context){
+    return fireStore.collection('users').doc(auth.currentUser!.uid).collection('statuses').doc(auth.currentUser!.uid).snapshots().asyncMap((event) async{
+      var userData = await fireStore.collection('users').doc(auth.currentUser!.uid).get();
+      var user = UserModel.fromMap(userData.data()!);
+      List<Map<String, dynamic>> statusIds = List<Map<String, dynamic>>.from(event.data()!['statusIds']);
+
+      List<String> photoUrl = [];
+      List<String> listStatusIds = [];
+      List<bool> isSeenStatus = [];
+      DateTime lastUploadedStatusTime = DateTime(0);
+      for(var statusId in statusIds){
+        var statusDataSnapshot = await fireStore.collection('status').doc(statusId['statusId']).get();
+        Status statusData = Status.fromMap(statusDataSnapshot.data()!);
+        if(statusData.createdAt.isAfter(DateTime.now().subtract(const Duration(hours: 24)))) {
+          photoUrl.add(statusData.photoUrl);
+          listStatusIds.add(statusId['statusId']);
+          isSeenStatus.add(statusId['isSeen']);
+          if(statusData.createdAt.isAfter(lastUploadedStatusTime)) {
+            lastUploadedStatusTime = statusData.createdAt;
+          }
+        }
+      }
+      UserStatus userStatus = UserStatus(name: user.name, profilePic: user.profilePic, photoUrl: photoUrl, statusId: listStatusIds,
+          uid: auth.currentUser!.uid, isSeenStatus: isSeenStatus, lastUploadedStatusTime: lastUploadedStatusTime);
+
+      return userStatus;
+    });
+  }
+
   void updateIsSeen(String uid, String statusId) async{
     var dataSnapshot =  await fireStore.collection('users').doc(auth.currentUser!.uid).collection('statuses').doc(uid).get();
     List<Map<String, dynamic>> statusIds = List<Map<String, dynamic>>.from(dataSnapshot.data()!['statusIds']);

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/common/utils/colors.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
+import 'package:whatsapp_clone/features/call/screens/call_log_screen.dart';
 import 'package:whatsapp_clone/features/group/screens/create_group_screen.dart';
 import 'package:whatsapp_clone/features/select_contacts/screens/select_contacts_screen.dart';
 import 'package:whatsapp_clone/features/status/screens/confirm_status_screen.dart';
@@ -110,7 +111,7 @@ class _MobileLayoutScreenState extends ConsumerState<MobileLayoutScreen> with Wi
             children: const [
               ContactsList(),
               StatusContactsScreen(),
-              Text('Calls'),
+              CallLogs(),
             ],
           ),
           floatingActionButton: FloatingActionButton(

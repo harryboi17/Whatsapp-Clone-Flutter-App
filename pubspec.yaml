@@ -55,6 +55,7 @@ dependencies:
   agora_uikit: ^1.0.4
   audio_video_progress_bar: ^0.10.0
   emoji_picker_flutter: ^1.4.0
+  flutter_phone_direct_caller: ^2.1.1
 
 dev_dependencies:
   flutter_test:

@@ -55,5 +55,7 @@
     <string>Contact List to chat</string>
     <key>NSAppleMusicUsageDescription</key>
     <string>Needs to head recording</string>
+    <key>LSApplicationQueriesSchemes</key>
+    <string>tel</string>
 </dict>
 </plist>

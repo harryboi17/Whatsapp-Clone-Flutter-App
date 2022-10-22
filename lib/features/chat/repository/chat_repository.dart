@@ -29,6 +29,7 @@ class ChatRepository {
         .collection('users')
         .doc(firebaseAuth.currentUser!.uid)
         .collection('chats')
+        .orderBy('timeSent', descending: true)
         .snapshots()
         .asyncMap((event) async {
       List<ChatContact> contacts = [];
@@ -59,6 +60,7 @@ class ChatRepository {
         .collection('users')
         .doc(firebaseAuth.currentUser!.uid)
         .collection('groups')
+        .orderBy('timeSent', descending: true)
         .snapshots()
         .asyncMap((event) async{
           List<GroupDataModel> groups = [];

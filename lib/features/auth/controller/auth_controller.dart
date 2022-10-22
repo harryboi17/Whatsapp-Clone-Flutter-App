@@ -56,4 +56,8 @@ class AuthController{
   Future<UserModel> userData(String uid){
     return authRepository.userModelData(uid);
   }
+
+  String uid(){
+    return authRepository.uid();
+  }
 }

@@ -67,6 +67,7 @@ class CallPickupScreen extends ConsumerWidget {
                               'call' : call,
                               'isGroupChat' : false,
                             });
+                            ref.read(callControllerProvider).notifyPickingUpCall(context: context, callId: call.callId);
                           },
                           icon: const Icon(
                             Icons.call,

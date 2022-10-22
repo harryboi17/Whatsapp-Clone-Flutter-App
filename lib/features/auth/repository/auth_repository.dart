@@ -140,4 +140,8 @@ class AuthRepository {
       });
     }
   }
+
+  String uid(){
+    return auth.currentUser!.uid;
+  }
 }

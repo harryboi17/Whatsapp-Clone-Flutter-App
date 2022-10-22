@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
+import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 import '../../../model/call.dart';
 import '../../../model/group.dart';
 import '../screens/call_screen.dart';
@@ -22,7 +24,7 @@ class CallRepository{
     required this.auth,
   });
 
-  void makeCall({
+  void makeVideoCall({
     required Call senderCallData,
     required BuildContext context,
     required Call receiverCallData,
@@ -30,6 +32,9 @@ class CallRepository{
     try{
       await fireStore.collection('call').doc(senderCallData.callerId).set(senderCallData.toMap());
       await fireStore.collection('call').doc(senderCallData.receiverId).set(receiverCallData.toMap());
+
+      await fireStore.collection('users').doc(senderCallData.callerId).collection('callLog').doc(senderCallData.callId).set(senderCallData.toMap());
+      await fireStore.collection('users').doc(receiverCallData.receiverId).collection('callLog').doc(receiverCallData.callId).set(receiverCallData.toMap());
 
       Navigator.pushNamed(context, CallScreen.routeName, arguments: {
         'channelId' : senderCallData.callerId,
@@ -41,20 +46,24 @@ class CallRepository{
       showSnackBar(context: context, content: e.toString());
     }
   }
-  void makeGroupCall({
+  void makeGroupVideoCall({
     required Call senderCallData,
     required BuildContext context,
     required Call receiverCallData,
   }) async {
     try{
       await fireStore.collection('call').doc(senderCallData.callerId).set(senderCallData.toMap());
+      await fireStore.collection('users').doc(senderCallData.callerId).collection('callLog').doc(senderCallData.callId).set(senderCallData.toMap());
 
       var groupSnapshot = await fireStore.collection('groups').doc(senderCallData.receiverId).get();
       Group group = Group.fromMap(groupSnapshot.data()!);
 
       for(var id in group.membersUid) {
-        await fireStore.collection('call').doc(id).set(
+        if(id != senderCallData.callerId) {
+          await fireStore.collection('call').doc(id).set(
             receiverCallData.toMap());
+          await fireStore.collection('users').doc(id).collection('callLog').doc(receiverCallData.callId).set(receiverCallData.toMap());
+        }
       }
 
       Navigator.pushNamed(context, CallScreen.routeName, arguments: {
@@ -66,6 +75,12 @@ class CallRepository{
     }catch(e){
       showSnackBar(context: context, content: e.toString());
     }
+  }
+
+  void makeCall(String phoneNumber, Call senderCallData, Call receiverCallData) async{
+    await fireStore.collection('users').doc(senderCallData.callerId).collection('callLog').doc(senderCallData.callId).set(senderCallData.toMap());
+    await fireStore.collection('users').doc(receiverCallData.receiverId).collection('callLog').doc(receiverCallData.callId).set(receiverCallData.toMap());
+    await FlutterPhoneDirectCaller.callNumber(phoneNumber);
   }
 
   Stream<DocumentSnapshot> get callStream => fireStore.collection('call').doc(auth.currentUser!.uid).snapshots();
@@ -113,5 +128,24 @@ class CallRepository{
     }catch(e){
       showSnackBar(context: context, content: e.toString());
     }
+  }
+
+  void notifyPickingUpCall({
+    required BuildContext context,
+    required String callId,
+  }) async{
+    await fireStore.collection('users').doc(auth.currentUser!.uid).collection('callLog').doc(callId).update({
+      'isMissedCall' : false,
+    });
+  }
+
+  Future<List<Call>> getCallLogs(String uid) async{
+    List<Call> callLogs = [];
+    var callSnapshot = await fireStore.collection('users').doc(uid).collection('callLog').orderBy('callTime', descending: true).get();
+    for(var doc in callSnapshot.docs){
+      Call callData = Call.fromMap(doc.data());
+      callLogs.add(callData);
+    }
+    return callLogs;
   }
 }

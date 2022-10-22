@@ -31,9 +31,11 @@ class CallController {
   Stream<DocumentSnapshot> get callStream => callRepository.callStream;
 
   void makeCall(BuildContext context, String receiverName, String receiverUid,
-      String receiverProfilePic, bool isGroupChat) {
-    ref.read(userDataAuthProvider).whenData((value) {
+      String receiverProfilePic, bool isGroupChat, bool isVideoCall) {
+    ref.read(userDataAuthProvider).whenData((value) async {
       String callId = const Uuid().v1();
+      String uid = isGroupChat ? auth.currentUser!.uid : receiverUid;
+      var user = await ref.read(authControllerProvider).userData(uid);
 
       Call senderCallData = Call(
         callerId: auth.currentUser!.uid,
@@ -44,6 +46,10 @@ class CallController {
         receiverPic: receiverProfilePic,
         callId: callId,
         hasDialled: true,
+        isGroupCall: isGroupChat,
+        isMissedCall: false,
+        isVideoCall: isVideoCall,
+        callTime: DateTime.now(),
       );
 
       Call receiverCallData = Call(
@@ -55,11 +61,21 @@ class CallController {
         receiverPic: receiverProfilePic,
         callId: callId,
         hasDialled: false,
+        isGroupCall: isGroupChat,
+        isMissedCall: true,
+        isVideoCall: isVideoCall,
+        callTime: DateTime.now(),
       );
       if (isGroupChat) {
-        callRepository.makeGroupCall(senderCallData: senderCallData, context: context, receiverCallData: receiverCallData);
+        if(isVideoCall) {
+          callRepository.makeGroupVideoCall(senderCallData: senderCallData, context: context, receiverCallData: receiverCallData);
+        }
       } else {
-        callRepository.makeCall(senderCallData: senderCallData, context: context, receiverCallData: receiverCallData);
+        if(isVideoCall) {
+          callRepository.makeVideoCall(senderCallData: senderCallData, context: context, receiverCallData: receiverCallData);
+        }else{
+          callRepository.makeCall(user.phoneNumber, senderCallData, receiverCallData);
+        }
       }
     });
   }
@@ -79,6 +95,17 @@ class CallController {
 
   void rejectCall(BuildContext context) {
       callRepository.rejectCall(receiverId: auth.currentUser!.uid, context: context);
+  }
+
+  void notifyPickingUpCall({
+    required BuildContext context,
+    required String callId,
+  }) {
+    callRepository.notifyPickingUpCall(context: context, callId: callId);
+  }
+
+  Future<List<Call>> getCallLogs(){
+    return callRepository.getCallLogs(auth.currentUser!.uid);
   }
 }
 //

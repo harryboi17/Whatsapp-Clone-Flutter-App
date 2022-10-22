@@ -78,7 +78,9 @@ class ContactsList extends ConsumerWidget {
                                   children: [
                                     const SizedBox(),
                                     Text(
-                                      DateFormat.jm().format(groupData.timeSent),
+                                      groupData.timeSent.isAfter(DateTime.now().subtract(const Duration(hours: 24)))
+                                          ? DateFormat.jm().format(groupData.timeSent)
+                                          : DateFormat('d/MM/yy').format(groupData.timeSent),
                                       style: TextStyle(
                                         color: groupData.unSeenMessageCount == 0 ?  Colors.grey : unSeenMessageColor,
                                         fontSize: 13,
@@ -167,7 +169,9 @@ class ContactsList extends ConsumerWidget {
                                   children: [
                                     const SizedBox(),
                                     Text(
-                                      DateFormat.jm().format(chatContactData.timeSent),
+                                      chatContactData.timeSent.isAfter(DateTime.now().subtract(const Duration(hours: 24)))
+                                        ? DateFormat.jm().format(chatContactData.timeSent)
+                                        : DateFormat('d/MM/yy').format(chatContactData.timeSent),
                                       style: TextStyle(
                                         color: chatContactData.unSeenMessageCount == 0 ?  Colors.grey : unSeenMessageColor,
                                         fontSize: 13,
