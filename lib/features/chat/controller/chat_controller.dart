@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/common/provider/message_reply_provider.dart';
@@ -33,6 +34,10 @@ class ChatController {
   }
   Stream<List<GroupMessage>> groupChatStream(String groupId){
     return chatRepository.getGroupChatStream(groupId);
+  }
+
+  Future<List<ChatContact>> getSearchedContacts(){
+    return chatRepository.getSearchedContacts();
   }
 
   void sendTextMessage(BuildContext context, String text, String receiverUserId, bool isGroupChat) {
@@ -112,5 +117,4 @@ class ChatController {
   }){
     chatRepository.setUnSeenMessageCount(context: context, receiverUserId: receiverUserId, unSeenMessageCount: unSeenMessageCount, senderUserId: senderUserId, isGroupChat: isGroupChat);
   }
-
 }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../model/call.dart';
+import '../../../model/user_model.dart';
 import '../../auth/controller/auth_controller.dart';
 import '../respository/call_repository.dart';
 
@@ -31,7 +32,10 @@ class CallController {
   Stream<DocumentSnapshot> get callStream => callRepository.callStream;
 
   void makeCall(BuildContext context, String receiverName, String receiverUid,
-      String receiverProfilePic, bool isGroupChat, bool isVideoCall) {
+      String receiverProfilePic, bool isGroupChat, bool isVideoCall) async{
+    UserModel receiverUserModel;
+    isGroupChat ? receiverUserModel = await ref.read(authControllerProvider).userData(auth.currentUser!.uid)
+                : receiverUserModel = await ref.read(authControllerProvider).userData(receiverUid);
     ref.read(userDataAuthProvider).whenData((value) async {
       String callId = const Uuid().v1();
       String uid = isGroupChat ? auth.currentUser!.uid : receiverUid;
@@ -41,9 +45,11 @@ class CallController {
         callerId: auth.currentUser!.uid,
         callerName: value!.name,
         callerPic: value.profilePic,
+        callerPhoneNumber: value.phoneNumber,
         receiverId: receiverUid,
         receiverName: receiverName,
         receiverPic: receiverProfilePic,
+        receiverPhoneNumber: isGroupChat ? '' : receiverUserModel.phoneNumber,
         callId: callId,
         hasDialled: true,
         isGroupCall: isGroupChat,
@@ -56,9 +62,11 @@ class CallController {
         callerId: auth.currentUser!.uid,
         callerName: value.name,
         callerPic: value.profilePic,
+        callerPhoneNumber: value.phoneNumber,
         receiverId: receiverUid,
         receiverName: receiverName,
         receiverPic: receiverProfilePic,
+        receiverPhoneNumber: receiverUserModel.phoneNumber,
         callId: callId,
         hasDialled: false,
         isGroupCall: isGroupChat,

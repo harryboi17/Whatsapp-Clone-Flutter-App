@@ -27,11 +27,8 @@ class MobileChatScreen extends ConsumerWidget {
   })
       : super(key: key);
 
-  void makeVideoCall(WidgetRef ref, BuildContext context){
-    ref.read(callControllerProvider).makeCall(context, name, uid, profilePic, isGroupChat, true);
-  }
-  void makePhoneCall(WidgetRef ref, BuildContext context){
-    ref.read(callControllerProvider).makeCall(context, name, uid, profilePic, isGroupChat, false);
+  void makeCall(WidgetRef ref, BuildContext context, bool isVideoCall){
+    ref.read(callControllerProvider).makeCall(context, name, uid, profilePic, isGroupChat, isVideoCall);
   }
 
   @override
@@ -101,11 +98,11 @@ class MobileChatScreen extends ConsumerWidget {
           titleSpacing: 0,
           actions: [
             IconButton(
-              onPressed: () => makeVideoCall(ref, context),
+              onPressed: () => makeCall(ref, context, true),
               icon: const Icon(Icons.video_call),
             ),
             IconButton(
-              onPressed: () => makePhoneCall(ref, context),
+              onPressed: () => makeCall(ref, context, false),
               icon: const Icon(Icons.call),
             ),
             IconButton(

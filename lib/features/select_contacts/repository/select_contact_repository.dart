@@ -40,7 +40,10 @@ class SelectContactRepository{
               MobileChatScreen.routeName,
               arguments: {
                 'name' : selectedContact.displayName,
-                'uid' : userData.uid
+                'uid' : userData.uid,
+                'isGroupChat' : false,
+                'numberOfMembers' : 1,
+                'profilePic' : userData.profilePic,
               }
           );
         }

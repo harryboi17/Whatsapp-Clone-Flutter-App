@@ -2,9 +2,11 @@ class Call {
   final String callerId;
   final String callerName;
   final String callerPic;
+  final String callerPhoneNumber;
   final String receiverId;
   final String receiverName;
   final String receiverPic;
+  final String receiverPhoneNumber;
   final String callId;
   final bool hasDialled;
   final bool isGroupCall;
@@ -17,9 +19,11 @@ class Call {
     required this.callerId,
     required this.callerName,
     required this.callerPic,
+    required this.callerPhoneNumber,
     required this.receiverId,
     required this.receiverName,
     required this.receiverPic,
+    required this.receiverPhoneNumber,
     required this.callId,
     required this.hasDialled,
     required this.isGroupCall,
@@ -33,9 +37,11 @@ class Call {
       'callerId': callerId,
       'callerName': callerName,
       'callerPic': callerPic,
+      'callerPhoneNumber' : callerPhoneNumber,
       'receiverId': receiverId,
       'receiverName': receiverName,
       'receiverPic': receiverPic,
+      'receiverPhoneNumber' : receiverPhoneNumber,
       'callId': callId,
       'hasDialled': hasDialled,
       'isGroupCall': isGroupCall,
@@ -50,9 +56,11 @@ class Call {
       callerId: map['callerId'] as String,
       callerName: map['callerName'] as String,
       callerPic: map['callerPic'] as String,
+      callerPhoneNumber: map['callerPhoneNumber'] as String,
       receiverId: map['receiverId'] as String,
       receiverName: map['receiverName'] as String,
       receiverPic: map['receiverPic'] as String,
+      receiverPhoneNumber: map['receiverPhoneNumber'] as String,
       callId: map['callId'] as String,
       hasDialled: map['hasDialled'] as bool,
       isGroupCall: map['isGroupCall'] as bool,

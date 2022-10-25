@@ -7,7 +7,6 @@ import 'package:whatsapp_clone/common/enums/message_enum.dart';
 import 'package:whatsapp_clone/common/provider/message_reply_provider.dart';
 import 'package:whatsapp_clone/common/repository/firebase_storage_repository.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
-import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 import 'package:whatsapp_clone/model/chat_contact.dart';
 import 'package:whatsapp_clone/model/message.dart';
 import 'package:whatsapp_clone/model/user_model.dart';
@@ -49,6 +48,9 @@ class ChatRepository {
           lastMessage: chatContact.lastMessage,
           isTyping: chatContact.isTyping,
           unSeenMessageCount: chatContact.unSeenMessageCount,
+          phoneNumber: user.phoneNumber,
+          isGroupChat: chatContact.isGroupChat,
+          numberOfMembers: chatContact.numberOfMembers,
         ));
       }
       return contacts;
@@ -140,6 +142,9 @@ class ChatRepository {
         lastMessage: text,
         isTyping: false,
         unSeenMessageCount: 0,
+        phoneNumber: senderUserData.phoneNumber,
+        isGroupChat: false,
+        numberOfMembers: 1,
       );
 
       await fireStore
@@ -158,6 +163,9 @@ class ChatRepository {
         lastMessage: text,
         isTyping: false,
         unSeenMessageCount: 0,
+        phoneNumber: receiverUserData.phoneNumber,
+        isGroupChat: false,
+        numberOfMembers: 1,
       );
 
       await fireStore
@@ -430,4 +438,36 @@ class ChatRepository {
     }
   }
 
+  Future<List<ChatContact>> getSearchedContacts() async {
+    var contactDataSnapshot = await fireStore.collection('users').doc(
+        firebaseAuth.currentUser!.uid).collection('chats').orderBy(
+        'timeSent', descending: true).get();
+    List<ChatContact> contacts = [];
+    for (var document in contactDataSnapshot.docs) {
+      var chatContact = ChatContact.fromMap(document.data());
+      contacts.add(chatContact);
+    }
+
+    var groupDataSnapshot = await fireStore.collection('users').doc(
+        firebaseAuth.currentUser!.uid).collection('groups').orderBy(
+        'timeSent', descending: true).get();
+    for (var document in groupDataSnapshot.docs) {
+      GroupDataModel groupDataModel = GroupDataModel.fromMap(document.data());
+      contacts.add(ChatContact(
+          name: groupDataModel.groupName,
+          profilePic: groupDataModel.groupPic,
+          contactId: groupDataModel.groupId,
+          timeSent: groupDataModel.timeSent,
+          lastMessage: groupDataModel.lastMessage,
+          isTyping: groupDataModel.isTyping,
+          unSeenMessageCount: groupDataModel.unSeenMessageCount,
+          phoneNumber: "",
+          isGroupChat: true,
+          numberOfMembers: groupDataModel.membersUid.length
+        )
+      );
+    }
+    // contacts.sort((a,b) => a.timeSent.compareTo(b.timeSent));
+    return contacts;
+  }
 }

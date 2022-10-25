@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:whatsapp_clone/common/repository/firebase_storage_repository.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
-import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 
 import '../../../model/status_model.dart';
 import '../../../model/user_model.dart';
@@ -57,7 +56,7 @@ class StatusRepository{
                 'statusId' : statusId,
                 'isSeen' : false
               });
-              await fireStore.collection('users').doc(userData.uid).collection('statuses').doc(uid).update({
+              fireStore.collection('users').doc(userData.uid).collection('statuses').doc(uid).update({
                 'statusIds' : statusIds
               });
             }
@@ -66,7 +65,7 @@ class StatusRepository{
                 'statusId' : statusId,
                 'isSeen' : false
               }];
-              await fireStore.collection('users').doc(userData.uid).collection('statuses').doc(uid).set({
+              fireStore.collection('users').doc(userData.uid).collection('statuses').doc(uid).set({
                 'userId' : uid,
                 'statusIds' : statusIds
               });
@@ -83,7 +82,7 @@ class StatusRepository{
           'statusId' : statusId,
           'isSeen' : false
         });
-        await fireStore.collection('users').doc(uid).collection('statuses').doc(uid).update({
+        fireStore.collection('users').doc(uid).collection('statuses').doc(uid).update({
           'statusIds' : statusIds
         });
       }
@@ -92,7 +91,7 @@ class StatusRepository{
           'statusId' : statusId,
           'isSeen' : false
         }];
-        await fireStore.collection('users').doc(uid).collection('statuses').doc(uid).set({
+        fireStore.collection('users').doc(uid).collection('statuses').doc(uid).set({
           'userId' : uid,
           'statusIds' : statusIds
         });
@@ -105,7 +104,7 @@ class StatusRepository{
         whoCanSee: uidWhoCanSee,
       );
 
-      await fireStore.collection('status').doc(statusId).set(status.toMap());
+      fireStore.collection('status').doc(statusId).set(status.toMap());
     }catch(e){
       showSnackBar(context: context, content: e.toString());
     }
@@ -145,7 +144,7 @@ class StatusRepository{
           }
           if(photoUrl.isNotEmpty && listStatusIds.isNotEmpty){
             UserStatus userStatus = UserStatus(name: user.name, profilePic: user.profilePic, photoUrl: photoUrl, statusId: listStatusIds,
-                uid: userUid, isSeenStatus: isSeenStatus, lastUploadedStatusTime: lastUploadedStatusTime);
+                uid: userUid, isSeenStatus: isSeenStatus, lastUploadedStatusTime: lastUploadedStatusTime, phoneNumber: user.phoneNumber);
             if(seenStatusIdCount != listStatusIds.length) {
               userStatusData.add(userStatus);
             }
@@ -186,7 +185,7 @@ class StatusRepository{
         }
       }
       UserStatus userStatus = UserStatus(name: user.name, profilePic: user.profilePic, photoUrl: photoUrl, statusId: listStatusIds,
-          uid: auth.currentUser!.uid, isSeenStatus: isSeenStatus, lastUploadedStatusTime: lastUploadedStatusTime);
+          uid: auth.currentUser!.uid, isSeenStatus: isSeenStatus, lastUploadedStatusTime: lastUploadedStatusTime, phoneNumber: user.phoneNumber);
 
       return userStatus;
     });
@@ -215,5 +214,43 @@ class StatusRepository{
         'statusIds': statusIds,
       });
     }
+  }
+
+  Future<List<UserStatus>> getSearchedStatus() async{
+     var statusDataSnapshot = await fireStore.collection('users').doc(auth.currentUser!.uid).collection('statuses').get();
+     List<UserStatus> userStatusData = [];
+     for(var document in statusDataSnapshot.docs){
+       String userUid = document.data()['userId'];
+       List<Map<String, dynamic>> statusIds = List<Map<String, dynamic>>.from(document.data()['statusIds']);
+       var userData = await fireStore
+           .collection('users')
+           .doc(userUid)
+           .get();
+       var user = UserModel.fromMap(userData.data()!);
+       List<String> photoUrl = [];
+       List<String> listStatusIds = [];
+       List<bool> isSeenStatus = [];
+       DateTime lastUploadedStatusTime = DateTime(0);
+       if(statusIds.isNotEmpty && user.uid != auth.currentUser!.uid){
+         for(var statusId in statusIds){
+           var statusDataSnapshot = await fireStore.collection('status').doc(statusId['statusId']).get();
+           Status statusData = Status.fromMap(statusDataSnapshot.data()!);
+           if(statusData.createdAt.isAfter(DateTime.now().subtract(const Duration(hours: 24)))) {
+             photoUrl.add(statusData.photoUrl);
+             listStatusIds.add(statusId['statusId']);
+             isSeenStatus.add(statusId['isSeen']);
+             if(statusData.createdAt.isAfter(lastUploadedStatusTime)) {
+               lastUploadedStatusTime = statusData.createdAt;
+             }
+           }
+         }
+         if(photoUrl.isNotEmpty && listStatusIds.isNotEmpty){
+           UserStatus userStatus = UserStatus(name: user.name, profilePic: user.profilePic, photoUrl: photoUrl, statusId: listStatusIds,
+               uid: userUid, isSeenStatus: isSeenStatus, lastUploadedStatusTime: lastUploadedStatusTime, phoneNumber: user.phoneNumber);
+           userStatusData.add(userStatus);
+         }
+       }
+     }
+     return userStatusData;
   }
 }

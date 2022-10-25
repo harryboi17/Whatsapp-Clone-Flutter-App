@@ -44,4 +44,8 @@ class StatusController {
   void updateIsSeen(String uid, String statusId){
     statusRepository.updateIsSeen(uid, statusId);
   }
+
+  Future<List<UserStatus>> getSearchedStatus(){
+    return statusRepository.getSearchedStatus();
+  }
 }

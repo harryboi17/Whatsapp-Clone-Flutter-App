@@ -1,7 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_contacts/contact.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:whatsapp_clone/features/group/widgets/search_bar.dart';
+import 'package:whatsapp_clone/features/select_contacts/controller/select_contact_controller.dart';
 
 import '../../../common/utils/colors.dart';
 import '../../../common/utils/utils.dart';
@@ -51,6 +54,14 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Group'),
+        actions: [
+          IconButton(
+            onPressed: () async{
+              ref.watch(getContactsProvider).whenData((value) => showCreateGroupSearchBar(context, ref, value));
+            },
+            icon: const Icon(Icons.search),
+          ),
+        ],
       ),
       body: Center(
         child: Column(

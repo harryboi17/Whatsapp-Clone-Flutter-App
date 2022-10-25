@@ -6,6 +6,9 @@ class ChatContact{
   final String lastMessage;
   final bool isTyping;
   final int unSeenMessageCount;
+  final String phoneNumber;
+  final bool isGroupChat;
+  final int numberOfMembers;
 
   ChatContact({
     required this.name,
@@ -14,7 +17,10 @@ class ChatContact{
     required this.timeSent,
     required this.lastMessage,
     required this.isTyping,
-    required this.unSeenMessageCount
+    required this.unSeenMessageCount,
+    required this.phoneNumber,
+    required this.isGroupChat,
+    required this.numberOfMembers,
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +32,9 @@ class ChatContact{
       'lastMessage': lastMessage,
       'isTyping' : isTyping,
       'unSeenMessageCount': unSeenMessageCount,
+      'phoneNumber' : phoneNumber,
+      'isGroupChat' : isGroupChat,
+      'numberOfMembers' : numberOfMembers,
     };
   }
 
@@ -38,6 +47,9 @@ class ChatContact{
       lastMessage: map['lastMessage'] ?? '',
       isTyping: map['isTyping'] ?? false,
       unSeenMessageCount: map['unSeenMessageCount'] ?? 0,
+      phoneNumber: map['phoneNumber'] ?? '',
+      isGroupChat: map['isGroupChat'] ?? false,
+      numberOfMembers: map['numberOfMembers'] ?? 1,
     );
   }
 }

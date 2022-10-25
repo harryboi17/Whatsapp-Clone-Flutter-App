@@ -56,6 +56,7 @@ dependencies:
   audio_video_progress_bar: ^0.10.0
   emoji_picker_flutter: ^1.4.0
   flutter_phone_direct_caller: ^2.1.1
+  search_page: ^2.2.0
 
 dev_dependencies:
   flutter_test:

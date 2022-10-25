@@ -15,17 +15,14 @@ class SelectContactsGroup extends ConsumerStatefulWidget {
 }
 
 class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
-  List<int> selectedContactsIndex = [];
 
-  void selectContact(int index, Contact contact){
-    if(selectedContactsIndex.contains(index)){
-      selectedContactsIndex.remove(index);
+  void selectContact(Contact contact){
+    if(ref.read(selectedGroupContacts).contains(contact)){
       ref.read(selectedGroupContacts.state).update((state){
         state.remove(contact);
         return state;
       });
     }else{
-      selectedContactsIndex.add(index);
       ref.read(selectedGroupContacts.state).update((state) => [...state, contact]);
     }
     setState(() {});
@@ -40,13 +37,13 @@ class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
               itemBuilder: (context, index) {
                 final contact = contactList[index];
                 return InkWell(
-                  onTap: () => selectContact(index, contact),
+                  onTap: () => selectContact(contact),
                   child: Padding(
                     padding: const EdgeInsets.only(left: 6),
                     child: ListTile(
                       title: Text(contact.displayName),
-                      leading: selectedContactsIndex.contains(index)
-                          ? IconButton(onPressed: (){}, icon : const Icon(Icons.done),)
+                      leading: ref.read(selectedGroupContacts).contains(contactList[index])
+                          ? IconButton(onPressed: () => selectContact(contact), icon : const Icon(Icons.done),)
                           : null
                     ),
                   ),
