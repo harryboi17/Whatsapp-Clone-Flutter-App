@@ -24,20 +24,12 @@ class ChatRepository {
   ChatRepository(this.fireStore, this.firebaseAuth);
 
   Stream<List<ChatContact>> getChatContacts() {
-    return fireStore
-        .collection('users')
-        .doc(firebaseAuth.currentUser!.uid)
-        .collection('chats')
-        .orderBy('timeSent', descending: true)
-        .snapshots()
+    return fireStore.collection('users').doc(firebaseAuth.currentUser!.uid).collection('chats').orderBy('timeSent', descending: true).snapshots()
         .asyncMap((event) async {
       List<ChatContact> contacts = [];
       for (var document in event.docs) {
         var chatContact = ChatContact.fromMap(document.data());
-        var userData = await fireStore
-            .collection('users')
-            .doc(chatContact.contactId)
-            .get();
+        var userData = await fireStore.collection('users').doc(chatContact.contactId).get();
         var user = UserModel.fromMap(userData.data()!);
 
         contacts.add(ChatContact(
@@ -58,13 +50,8 @@ class ChatRepository {
   }
 
   Stream<List<GroupDataModel>> getChatGroups() {
-    return fireStore
-        .collection('users')
-        .doc(firebaseAuth.currentUser!.uid)
-        .collection('groups')
-        .orderBy('timeSent', descending: true)
-        .snapshots()
-        .asyncMap((event) async{
+    return fireStore.collection('users').doc(firebaseAuth.currentUser!.uid).collection('groups').orderBy('timeSent', descending: true)
+        .snapshots().asyncMap((event) async{
           List<GroupDataModel> groups = [];
           for(var groupIdData in event.docs){
             GroupDataModel groupDataModel = GroupDataModel.fromMap(groupIdData.data());
@@ -77,15 +64,8 @@ class ChatRepository {
   }
 
   Stream<List<Message>> getChatStream(String receiverUserId) {
-    return fireStore
-        .collection('users')
-        .doc(firebaseAuth.currentUser!.uid)
-        .collection('chats')
-        .doc(receiverUserId)
-        .collection('messages')
-        .orderBy('timeSent')
-        .snapshots()
-        .map((event) {
+    return fireStore.collection('users').doc(firebaseAuth.currentUser!.uid).collection('chats').doc(receiverUserId).collection('messages')
+        .orderBy('timeSent').snapshots().map((event) {
       List<Message> messages = [];
       for (var document in event.docs) {
         messages.add(Message.fromMap(document.data()));
@@ -93,17 +73,12 @@ class ChatRepository {
       return messages;
     });
   }
-  Stream<List<GroupMessage>> getGroupChatStream(String groupId) {
-    return fireStore
-        .collection('groups')
-        .doc(groupId)
-        .collection('chats')
-        .orderBy('timeSent')
-        .snapshots()
+  Stream<List<Message>> getGroupChatStream(String groupId) {
+    return fireStore.collection('groups').doc(groupId).collection('chats').orderBy('timeSent').snapshots()
         .map((event) {
-      List<GroupMessage> messages = [];
+      List<Message> messages = [];
       for (var document in event.docs) {
-        messages.add(GroupMessage.fromMap(document.data()));
+        messages.add(Message.fromMap(document.data()));
       }
       return messages;
     });
@@ -188,19 +163,19 @@ class ChatRepository {
     required String? receiverUserName,
     required bool isGroupChat,
   }) async {
+    final message = Message(
+      senderId: firebaseAuth.currentUser!.uid,
+      receiverId: receiverUserId,
+      text: text,
+      type: messageType,
+      timeSent: timeSent,
+      messageId: messageId,
+      seenBy: [],
+      repliedMessage: messageReply == null ? '' : messageReply.message,
+      repliedTo: messageReply == null ? '' : messageReply.isMe ? userName : receiverUserName ?? '',
+      repliedMessageType: messageReply == null ? MessageEnum.text : messageReply.messageEnum,
+    );
     if(isGroupChat){
-      final message = GroupMessage(
-        senderId: firebaseAuth.currentUser!.uid,
-        receiverId: receiverUserId,
-        text: text,
-        type: messageType,
-        timeSent: timeSent,
-        messageId: messageId,
-        seenBy: [],
-        repliedMessage: messageReply == null ? '' : messageReply.message,
-        repliedTo: messageReply == null ? '' : messageReply.isMe ? userName : receiverUserName ?? '',
-        repliedMessageType: messageReply == null ? MessageEnum.text : messageReply.messageEnum,
-      );
       await fireStore.collection('groups').doc(receiverUserId).collection('chats').doc(messageId).set(message.toMap());
 
       var groupData = await fireStore.collection('groups').doc(receiverUserId).get();
@@ -214,36 +189,11 @@ class ChatRepository {
       }
     }
     else {
-      final message = Message(
-        senderId: firebaseAuth.currentUser!.uid,
-        receiverId: receiverUserId,
-        text: text,
-        type: messageType,
-        timeSent: timeSent,
-        messageId: messageId,
-        isSeen: false,
-        repliedMessage: messageReply == null ? '' : messageReply.message,
-        repliedTo: messageReply == null ? '' : messageReply.isMe ? userName : receiverUserName ?? '',
-        repliedMessageType: messageReply == null ? MessageEnum.text : messageReply.messageEnum,
-      );
       //users -> sender id -> receiver id -> messages -> message id -> store message
-      await fireStore
-          .collection('users')
-          .doc(firebaseAuth.currentUser!.uid)
-          .collection('chats')
-          .doc(receiverUserId)
-          .collection('messages')
-          .doc(messageId)
+      await fireStore.collection('users').doc(firebaseAuth.currentUser!.uid).collection('chats').doc(receiverUserId).collection('messages').doc(messageId)
           .set(message.toMap());
-
       //users -> receiver id -> sender id -> messages -> message id -> store message
-      await fireStore
-          .collection('users')
-          .doc(receiverUserId)
-          .collection('chats')
-          .doc(firebaseAuth.currentUser!.uid)
-          .collection('messages')
-          .doc(messageId)
+      await fireStore.collection('users').doc(receiverUserId).collection('chats').doc(firebaseAuth.currentUser!.uid).collection('messages').doc(messageId)
           .set(message.toMap());
     }
   }
@@ -380,24 +330,11 @@ class ChatRepository {
   }) async{
     try{
         //users -> sender id -> receiver id -> messages -> message id -> store message
-        await fireStore
-            .collection('users')
-            .doc(firebaseAuth.currentUser!.uid)
-            .collection('chats')
-            .doc(receiverUserId)
-            .collection('messages')
-            .doc(messageId)
-            .update({'isSeen': true});
-
+        await fireStore.collection('users').doc(firebaseAuth.currentUser!.uid).collection('chats').doc(receiverUserId).collection('messages')
+            .doc(messageId).update({'seenBy': [firebaseAuth.currentUser!.uid, receiverUserId]});
         //users -> receiver id -> sender id -> messages -> message id -> store message
-        await fireStore
-            .collection('users')
-            .doc(receiverUserId)
-            .collection('chats')
-            .doc(firebaseAuth.currentUser!.uid)
-            .collection('messages')
-            .doc(messageId)
-            .update({'isSeen': true});
+        await fireStore.collection('users').doc(receiverUserId).collection('chats').doc(firebaseAuth.currentUser!.uid).collection('messages')
+            .doc(messageId).update({'seenBy': [firebaseAuth.currentUser!.uid, receiverUserId]});
     }catch(e){
       showSnackBar(context: context, content: e.toString());
     }
@@ -426,11 +363,7 @@ class ChatRepository {
           'unSeenMessageCount' : 0,
         });
       }else {
-        await fireStore
-            .collection('users')
-            .doc(receiverUserId)
-            .collection('chats')
-            .doc(senderUserId)
+        await fireStore.collection('users').doc(receiverUserId).collection('chats').doc(senderUserId)
             .update({'unSeenMessageCount': unSeenMessageCount});
       }
     }catch(e){

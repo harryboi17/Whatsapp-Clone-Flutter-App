@@ -3,7 +3,6 @@ import 'package:flutter_contacts/contact.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:search_page/search_page.dart';
 import 'package:whatsapp_clone/features/select_contacts/screens/display_contacts_screens.dart';
-import 'package:whatsapp_clone/features/select_contacts/screens/select_contacts_screen.dart';
 
 import '../controller/select_contact_controller.dart';
 

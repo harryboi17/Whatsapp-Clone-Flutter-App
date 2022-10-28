@@ -6,9 +6,8 @@ import 'display_contacts_screens.dart';
 
 class SelectContactScreen extends ConsumerWidget {
   static const String routeName = '/select-contact';
-
-  SelectContactScreen({Key? key}) : super(key: key);
-  List<Contact> contacts = [];
+  const SelectContactScreen({Key? key}) : super(key: key);
+  static List<Contact> contacts = [];
 
   void setContacts(List<Contact> contactList) {
     contacts = contactList;

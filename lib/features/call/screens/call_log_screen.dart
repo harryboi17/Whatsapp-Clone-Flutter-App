@@ -18,6 +18,7 @@ class CallLogs extends ConsumerWidget {
     @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SingleChildScrollView(
+      physics: const ScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -34,7 +35,7 @@ class CallLogs extends ConsumerWidget {
                 String uid = ref.read(authControllerProvider).uid();
                 return ListView.builder(
                     shrinkWrap: true,
-                    scrollDirection: Axis.vertical,
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, index) {
                       var callData = snapshot.data![index];

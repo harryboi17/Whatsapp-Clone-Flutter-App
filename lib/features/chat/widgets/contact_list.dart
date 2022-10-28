@@ -16,6 +16,7 @@ class ContactsList extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 10.0),
       child: SingleChildScrollView(
+        physics: const ScrollPhysics(),
         child: Column(
           children: [
             StreamBuilder<List<GroupDataModel>>(
@@ -25,6 +26,7 @@ class ContactsList extends ConsumerWidget {
                   return const Loader();
                 }
                 return ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, index){

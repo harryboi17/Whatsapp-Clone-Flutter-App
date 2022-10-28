@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:whatsapp_clone/common/widgets/loader.dart';
-import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
-import 'package:whatsapp_clone/features/call/controller/call_controller.dart';
 import 'package:whatsapp_clone/features/call/screens/call_pickup_screen.dart';
-import 'package:whatsapp_clone/model/group.dart';
-import '../../../common/utils/colors.dart';
-import '../../../model/user_model.dart';
+import '../widgets/app_bar.dart';
 import '../widgets/bottom_chat_field.dart';
 import '../widgets/chat_list.dart';
 
@@ -24,108 +19,40 @@ class MobileChatScreen extends ConsumerWidget {
       required this.isGroupChat,
       required this.numberOfMembers,
       required this.profilePic
-  })
-      : super(key: key);
-
-  void makeCall(WidgetRef ref, BuildContext context, bool isVideoCall){
-    ref.read(callControllerProvider).makeCall(context, name, uid, profilePic, isGroupChat, isVideoCall);
-  }
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return CallPickupScreen(
-      scaffold: Scaffold(
-        appBar: AppBar(
-          leadingWidth: 20,
-          backgroundColor: appBarColor,
-          title: isGroupChat
-              ? StreamBuilder<Group>(
-                  stream: ref.read(authControllerProvider).streamGroupDataById(uid),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Loader();
-                    }
-                    return ListTile(
-                      horizontalTitleGap: 10,
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(snapshot.data!.groupPic),
-                        radius: 20,
-                      ),
-                      title: Text(name, style: const TextStyle(fontSize: 17)),
-                      subtitle: Text(
-                        snapshot.data!.isTyping
-                            ? snapshot.data!.userTyping.length > 10
-                                ? snapshot.data!.userTyping.substring(0,10) + ' is typing...'
-                                : snapshot.data!.userTyping + ' is typing...'
-                            : snapshot.data!.membersUid.length.toString() + ' members',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.normal,
-                        ),
-                        maxLines: 1,
-                      ),
-                    );
-                  },
-                )
-              : StreamBuilder<UserModel>(
-                  stream: ref.read(authControllerProvider).streamUserDataById(uid),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Loader();
-                    }
-                    return ListTile(
-                      horizontalTitleGap: 10,
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(snapshot.data!.profilePic),
-                        radius: 20,
-                      ),
-                      title: Text(name, style: const TextStyle(fontSize: 17)),
-                      subtitle: Text(
-                        snapshot.data!.isOnline
-                            ? snapshot.data!.isTyping
-                                ? 'typing...'
-                                : 'online'
-                            : 'offline',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                    );
-                  },
+      scaffold: WillPopScope(
+        onWillPop: ()async{
+          if(ref.read(chatScreenAppBarProvider) == true){
+            ref.read(chatScreenAppBarProvider.state).update((state) => false);
+            ref.refresh(appBarMessageProvider);
+          }
+          else{
+            Navigator.pop(context);
+          }
+          return false;
+        },
+        child: Scaffold(
+          appBar: ChatScreenAppBar(isGroupChat: isGroupChat, uid: uid, name: name, profilePic: profilePic),
+          body: Column(
+            children: [
+              Expanded(
+                child: ChatList(
+                  receiverUserId: uid,
+                  isGroupChat : isGroupChat,
+                  numberOfMembers: numberOfMembers,
                 ),
-          centerTitle: false,
-          titleSpacing: 0,
-          actions: [
-            IconButton(
-              onPressed: () => makeCall(ref, context, true),
-              icon: const Icon(Icons.video_call),
-            ),
-            IconButton(
-              onPressed: () => makeCall(ref, context, false),
-              icon: const Icon(Icons.call),
-            ),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.more_vert),
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            Expanded(
-              child: ChatList(
-                receiverUserId: uid,
-                isGroupChat : isGroupChat,
-                numberOfMembers: numberOfMembers,
               ),
-            ),
-            BottomChatField(
-              receiverUserId: uid,
-              receiverName: name,
-              isGroupChat : isGroupChat,
-            ),
-          ],
+              BottomChatField(
+                receiverUserId: uid,
+                receiverName: name,
+                isGroupChat : isGroupChat,
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,6 +1,4 @@
 import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/common/provider/message_reply_provider.dart';
@@ -32,7 +30,7 @@ class ChatController {
   Stream<List<Message>> chatStream(String receiverUserId){
     return chatRepository.getChatStream(receiverUserId);
   }
-  Stream<List<GroupMessage>> groupChatStream(String groupId){
+  Stream<List<Message>> groupChatStream(String groupId){
     return chatRepository.getGroupChatStream(groupId);
   }
 
