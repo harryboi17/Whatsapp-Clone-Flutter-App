@@ -12,8 +12,7 @@ void makeCall(WidgetRef ref, BuildContext context, Call callData){
   ref.read(callControllerProvider).makeCall(context, callData.receiverName, callData.receiverId, callData.receiverPic, callData.isGroupCall, callData.isVideoCall);
 }
 
-Future showCallSearchBar(BuildContext context, WidgetRef ref) async {
-  List<Call> callLogs = await ref.read(callControllerProvider).getCallLogs();
+Future showCallSearchBar(BuildContext context, WidgetRef ref, List<Call> callLogs) async {
   String uid = ref.read(authControllerProvider).uid();
   return showSearch(
     context: context,

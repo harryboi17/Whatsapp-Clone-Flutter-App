@@ -11,7 +11,7 @@ import 'package:whatsapp_clone/features/chat/screens/mobile_chat_screen.dart';
 import 'package:whatsapp_clone/features/status/screens/confirm_status_screen.dart';
 import 'package:whatsapp_clone/features/status/screens/status_screen.dart';
 import 'package:whatsapp_clone/screens/mobile_layout_screen.dart';
-
+import 'features/chat/screens/forward_screen.dart';
 import 'features/group/screens/create_group_screen.dart';
 import 'model/status_model.dart';
 
@@ -59,8 +59,10 @@ Route<dynamic> generateRoute(RouteSettings settings){
           builder: (context) => StatusScreen(status: status)
       );
     case CreateGroupScreen.routeName:
+      final arguments = settings.arguments as Map<String, dynamic>;
+      final contacts = arguments['contacts'];
       return MaterialPageRoute(
-          builder: (context) => const CreateGroupScreen()
+          builder: (context) => CreateGroupScreen(contacts: contacts,)
       );
     case CallScreen.routeName:
       final arguments = settings.arguments as Map<String, dynamic>;
@@ -69,6 +71,12 @@ Route<dynamic> generateRoute(RouteSettings settings){
       final isGroupChat = arguments['isGroupChat'];
       return MaterialPageRoute(
           builder: (context) => CallScreen(channelId: channelId, call: call, isGroupChat: isGroupChat)
+      );
+    case ForwardScreen.routeName:
+      final arguments = settings.arguments as Map<String, dynamic>;
+      final contacts = arguments['contacts'];
+      return MaterialPageRoute(
+          builder: (context) => ForwardScreen(contacts: contacts,),
       );
     default:
       return MaterialPageRoute(

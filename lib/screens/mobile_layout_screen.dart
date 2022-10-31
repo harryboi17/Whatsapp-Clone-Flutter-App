@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_contacts/contact.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/common/utils/colors.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
@@ -8,12 +9,19 @@ import 'package:whatsapp_clone/features/call/screens/call_log_screen.dart';
 import 'package:whatsapp_clone/features/call/widgets/search_bar.dart';
 import 'package:whatsapp_clone/features/chat/widgets/search_bar.dart';
 import 'package:whatsapp_clone/features/group/screens/create_group_screen.dart';
+import 'package:whatsapp_clone/features/select_contacts/controller/select_contact_controller.dart';
 import 'package:whatsapp_clone/features/select_contacts/screens/select_contacts_screen.dart';
 import 'package:whatsapp_clone/features/status/screens/confirm_status_screen.dart';
 import 'package:whatsapp_clone/features/status/widgets/search_bar.dart';
 
+import '../features/call/controller/call_controller.dart';
+import '../features/chat/controller/chat_controller.dart';
 import '../features/chat/widgets/contact_list.dart';
+import '../features/status/controller/status_controller.dart';
 import '../features/status/screens/status_contacts_screen.dart';
+import '../model/call.dart';
+import '../model/chat_contact.dart';
+import '../model/status_model.dart';
 
 class MobileLayoutScreen extends ConsumerStatefulWidget {
   static const routeName = '/mobile-layout-screen';
@@ -75,15 +83,18 @@ class _MobileLayoutScreenState extends ConsumerState<MobileLayoutScreen> with Wi
           actions: [
             IconButton(
               icon: const Icon(Icons.search, color: Colors.grey),
-              onPressed: () {
-                if(tabBarController.index == 0) {
-                  showContactSearchBar(context, ref);
+              onPressed: ()async {
+                if(tabBarController.index == 0){
+                  List<ChatContact> contacts = await ref.read(chatControllerProvider).getSearchedContacts();
+                  showContactSearchBar(context, ref, contacts);
                 }
                 else if(tabBarController.index == 1){
-                  showStatusSearchBar(context, ref);
+                  List<UserStatus> statuses = await ref.read(statusControllerProvider).getSearchedStatus();
+                  showStatusSearchBar(context, ref, statuses);
                 }
                 else{
-                  showCallSearchBar(context, ref);
+                  List<Call> callLogs = await ref.read(callControllerProvider).getFutureCallLogs();
+                  showCallSearchBar(context, ref, callLogs);
                 }
               },
             ),
@@ -92,7 +103,12 @@ class _MobileLayoutScreenState extends ConsumerState<MobileLayoutScreen> with Wi
               itemBuilder: (context) => [
                 PopupMenuItem(
                   child: const Text('Create Group'),
-                  onTap: () => Future(() => Navigator.pushNamed(context, CreateGroupScreen.routeName)),
+                  onTap: ()async{
+                    List<Contact> contacts = await ref.read(selectContactControllerProvider).getContact();
+                    Future(() => Navigator.pushNamed(context, CreateGroupScreen.routeName, arguments: {
+                      'contacts' : contacts,
+                    }));
+                  },
                 ),
               ],
             ),

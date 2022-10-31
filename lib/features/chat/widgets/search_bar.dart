@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:search_page/search_page.dart';
-import 'package:whatsapp_clone/features/chat/controller/chat_controller.dart';
 import 'package:whatsapp_clone/features/chat/widgets/contact_list.dart';
 import 'package:whatsapp_clone/model/chat_contact.dart';
 
 import '../../../common/utils/colors.dart';
 import '../screens/mobile_chat_screen.dart';
 
-Future showContactSearchBar(BuildContext context, WidgetRef ref) async {
-  List<ChatContact> contacts = await ref.read(chatControllerProvider).getSearchedContacts();
+Future showContactSearchBar(BuildContext context, WidgetRef ref, List<ChatContact> contacts){
   return showSearch(
     context: context,
     delegate: SearchPage(
@@ -25,7 +23,7 @@ Future showContactSearchBar(BuildContext context, WidgetRef ref) async {
               'name': contact.name,
               'uid': contact.contactId,
               'isGroupChat': contact.isGroupChat,
-              'numberOfMembers': contact.numberOfMembers,
+              'numberOfMembers': contact.membersUid.length,
               'profilePic': contact.profilePic,
             });
           },

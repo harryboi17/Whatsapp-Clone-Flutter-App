@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/common/provider/message_reply_provider.dart';
 import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 import 'package:whatsapp_clone/features/chat/repository/chat_repository.dart';
+import 'package:whatsapp_clone/features/chat/screens/forward_screen.dart';
+import 'package:whatsapp_clone/features/chat/widgets/app_bar.dart';
 import 'package:whatsapp_clone/model/chat_contact.dart';
 import '../../../common/enums/message_enum.dart';
-import '../../../model/group.dart';
 import '../../../model/message.dart';
+import '../../../model/user_model.dart';
 
 final chatControllerProvider = Provider((ref){
   final chatRepository = ref.watch(chatRepositoryProvider);
@@ -23,8 +25,14 @@ class ChatController {
   Stream<List<ChatContact>> chatContacts(){
     return chatRepository.getChatContacts();
   }
-  Stream<List<GroupDataModel>> chatGroups(){
+  Future<List<ChatContact>> futureChatContacts(){
+    return chatRepository.getFutureChatContacts();
+  }
+  Stream<List<ChatContact>> chatGroups(){
     return chatRepository.getChatGroups();
+  }
+  Future<List<ChatContact>> futureChatGroups(){
+    return chatRepository.getFutureChatGroups();
   }
 
   Stream<List<Message>> chatStream(String receiverUserId){
@@ -114,5 +122,27 @@ class ChatController {
     required bool isGroupChat,
   }){
     chatRepository.setUnSeenMessageCount(context: context, receiverUserId: receiverUserId, unSeenMessageCount: unSeenMessageCount, senderUserId: senderUserId, isGroupChat: isGroupChat);
+  }
+
+  void deleteMessageForEveryone(List<Message> messages, bool isGroupChat, bool isLastMessageSelected){
+    chatRepository.deleteMessagesForEveryone(messages, ref, isGroupChat, isLastMessageSelected);
+  }
+
+  void deleteMessageForMe(List<Message> messages, isGroupChat){
+    chatRepository.deleteMessagesForMe(messages, isGroupChat);
+  }
+
+  void updateLastMessage(Message messageData, bool isGroupChat){
+    chatRepository.updateLastMessage(messageData, isGroupChat);
+  }
+
+  void forwardMessage(BuildContext context) async {
+    List<Message> messages = ref.read(appBarMessageProvider);
+    messages.sort((Message a, Message b){
+      return a.timeSent.compareTo(b.timeSent);
+    });
+    List<ChatContact> chatList = ref.read(chatContactProvider);
+    UserModel? user = await ref.read(authControllerProvider).getUserData();
+    chatRepository.forwardMessage(chatList, messages, context, user!);
   }
 }

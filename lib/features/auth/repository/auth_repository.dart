@@ -107,8 +107,8 @@ class AuthRepository {
     );
   }
 
-  void setUserState(bool isOnline) async{
-    await fireStore.collection('users').doc(auth.currentUser!.uid).update({
+  void setUserState(bool isOnline){
+    fireStore.collection('users').doc(auth.currentUser!.uid).update({
       'isOnline': isOnline,
     });
   }
@@ -117,7 +117,7 @@ class AuthRepository {
     if(isGroupChat){
       var currentUserData = await fireStore.collection('users').doc(auth.currentUser!.uid).get();
       UserModel userData = UserModel.fromMap(currentUserData.data()!);
-      await fireStore.collection('groups').doc(userId).update({
+      fireStore.collection('groups').doc(userId).update({
         'isTyping' : isTyping,
         'userTyping' : userData.name
       });
@@ -125,16 +125,16 @@ class AuthRepository {
       var groupData = await fireStore.collection('groups').doc(userId).get();
       List<String> membersId = List<String>.from(groupData.data()!['membersUid']);
       for(var uid in membersId){
-        await fireStore.collection('users').doc(uid).collection('groups').doc(userId).update({
+        fireStore.collection('users').doc(uid).collection('groups').doc(userId).update({
           'isTyping' : isTyping,
           'userTyping' : userData.name
         });
       }
     }else {
-      await fireStore.collection('users').doc(auth.currentUser!.uid).update({
+      fireStore.collection('users').doc(auth.currentUser!.uid).update({
         'isTyping': isTyping,
       });
-      await fireStore.collection('users').doc(userId).collection('chats').doc(
+      fireStore.collection('users').doc(userId).collection('chats').doc(
           auth.currentUser!.uid).update({
         'isTyping': isTyping,
       });

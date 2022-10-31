@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/common/enums/message_enum.dart';
 import 'package:whatsapp_clone/common/provider/message_reply_provider.dart';
 import 'package:whatsapp_clone/common/widgets/loader.dart';
+import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 import 'package:whatsapp_clone/features/chat/controller/chat_controller.dart';
 import 'package:whatsapp_clone/features/chat/widgets/senders_message_card.dart';
 import '../../../model/message.dart';
@@ -26,6 +27,7 @@ class ChatList extends ConsumerStatefulWidget {
 class _ChatListState extends ConsumerState<ChatList> {
   final ScrollController messageController = ScrollController();
   final String senderUserid = FirebaseAuth.instance.currentUser!.uid;
+  int total = 0;
 
   @override
   void initState() {
@@ -51,14 +53,17 @@ class _ChatListState extends ConsumerState<ChatList> {
         MessageReply(message: message, isMe: isMe, messageEnum: messageEnum));
   }
 
-  void onMessageLongPressed(Message message){
+  void onMessageLongPressed(Message message, int index){
     if(ref.read(chatScreenAppBarProvider) == false){
       ref.read(chatScreenAppBarProvider.state).update((state) => true);
-      onMessagePressed(message);
+      onMessagePressed(message, index);
     }
   }
-  void onMessagePressed(Message message){
+  void onMessagePressed(Message message, int index){
     if(ref.read(chatScreenAppBarProvider) == true){
+      if(index == total-1){
+        ref.read(isLastMessageSelectedProvider.state).update((state) => !state);
+      }
       if(ref.read(appBarMessageProvider).contains(message)){
         ref.read(appBarMessageProvider.state).update((state){
           state.remove(message);
@@ -71,6 +76,7 @@ class _ChatListState extends ConsumerState<ChatList> {
       }else{
         ref.read(appBarMessageProvider.state).update((state) => [...state, message]);
       }
+
     }
   }
   @override
@@ -89,13 +95,20 @@ class _ChatListState extends ConsumerState<ChatList> {
                 }
               });
 
+              String myUid = ref.read(authControllerProvider).uid();
               ref.read(chatControllerProvider).setUnSeenMessageCount(context: context, senderUserId: "", receiverUserId: widget.receiverUserId, unSeenMessageCount: 0, isGroupChat: true);
-
+              List<Message> messages = [];
+              for(var message in snapshot.data!){
+                if(!message.deletedBy.contains(myUid)){
+                  messages.add(message);
+                }
+              }
+              total = messages.length;
               return ListView.builder(
                 controller: messageController,
-                itemCount: snapshot.data!.length,
+                itemCount: messages.length,
                 itemBuilder: (context, index) {
-                  final messageData = snapshot.data![index];
+                  final messageData = messages[index];
 
                   List<String> seenSet = messageData.seenBy;
                   if(!seenSet.contains(FirebaseAuth.instance.currentUser!.uid)) {
@@ -103,10 +116,14 @@ class _ChatListState extends ConsumerState<ChatList> {
                     ref.read(chatControllerProvider).updateGroupMessageSeen(context: context, groupId: widget.receiverUserId, messageId: messageData.messageId, seenBy: seenSet);
                   }
 
+                  if(index == total-1){
+                    ref.read(chatControllerProvider).updateLastMessage(messageData, widget.isGroupChat);
+                  }
+
                   if (messageData.senderId == FirebaseAuth.instance.currentUser!.uid) {
                     return MyMessageCard(
-                      onPressed: () => onMessagePressed(messageData),
-                      onLongPressed: () => onMessageLongPressed(messageData),
+                      onPressed: () => onMessagePressed(messageData, index),
+                      onLongPressed: () => onMessageLongPressed(messageData, index),
                       onSwipe: () => onMessageSwipe(
                           message: messageData.text,
                           isMe: true,
@@ -116,8 +133,8 @@ class _ChatListState extends ConsumerState<ChatList> {
                     );
                   }
                   return SenderMessageCard(
-                    onPressed: () => onMessagePressed(messageData),
-                    onLongPressed: () => onMessageLongPressed(messageData),
+                    onPressed: () => onMessagePressed(messageData, index),
+                    onLongPressed: () => onMessageLongPressed(messageData, index),
                     onSwipe: () => onMessageSwipe(
                       message: messageData.text,
                       isMe: false,
@@ -142,6 +159,7 @@ class _ChatListState extends ConsumerState<ChatList> {
                 }
               });
 
+              total = snapshot.data!.length;
               ref.read(chatControllerProvider).setUnSeenMessageCount(context: context, receiverUserId: senderUserid, unSeenMessageCount: 0, senderUserId: widget.receiverUserId, isGroupChat: widget.isGroupChat,);
 
               return ListView.builder(
@@ -156,15 +174,19 @@ class _ChatListState extends ConsumerState<ChatList> {
                     } else {
                       unSeenMessageCount += 1;
                       if (index == snapshot.data!.length - 1) {
-                        ref.read(chatControllerProvider).setUnSeenMessageCount(context: context,receiverUserId: widget.receiverUserId,unSeenMessageCount: unSeenMessageCount,senderUserId: senderUserid,isGroupChat: widget.isGroupChat,);
+                        ref.read(chatControllerProvider).setUnSeenMessageCount(context: context, receiverUserId: widget.receiverUserId, unSeenMessageCount: unSeenMessageCount, senderUserId: senderUserid, isGroupChat: widget.isGroupChat,);
                       }
                     }
                   }
 
+                  if(index == snapshot.data!.length - 1) {
+                    ref.read(chatControllerProvider).updateLastMessage(messageData, widget.isGroupChat);
+                  }
+
                   if (messageData.senderId == FirebaseAuth.instance.currentUser!.uid) {
                     return MyMessageCard(
-                      onPressed: () => onMessagePressed(messageData),
-                      onLongPressed: () => onMessageLongPressed(messageData),
+                      onPressed: () => onMessagePressed(messageData, index),
+                      onLongPressed: () => onMessageLongPressed(messageData, index),
                       onSwipe: () => onMessageSwipe(
                           message: messageData.text,
                           isMe: true,
@@ -174,8 +196,8 @@ class _ChatListState extends ConsumerState<ChatList> {
                     );
                   }
                   return SenderMessageCard(
-                    onPressed: () => onMessagePressed(messageData),
-                    onLongPressed: () => onMessageLongPressed(messageData),
+                    onPressed: () => onMessagePressed(messageData, index),
+                    onLongPressed: () => onMessageLongPressed(messageData, index),
                     onSwipe: () => onMessageSwipe(
                       message: messageData.text,
                       isMe: false,

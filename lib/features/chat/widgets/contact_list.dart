@@ -2,24 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:whatsapp_clone/features/chat/controller/chat_controller.dart';
-import 'package:whatsapp_clone/model/group.dart';
 import '../../../common/utils/colors.dart';
 import '../../../common/widgets/loader.dart';
 import '../../../model/chat_contact.dart';
 import '../screens/mobile_chat_screen.dart';
 
-class ContactsList extends ConsumerWidget {
+class ContactsList extends ConsumerStatefulWidget{
   const ContactsList({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ContactsList> createState() => _ContactsListState();
+}
+
+class _ContactsListState extends ConsumerState<ContactsList> with AutomaticKeepAliveClientMixin {
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
     return Padding(
       padding: const EdgeInsets.only(top: 10.0),
       child: SingleChildScrollView(
         physics: const ScrollPhysics(),
         child: Column(
           children: [
-            StreamBuilder<List<GroupDataModel>>(
+            StreamBuilder<List<ChatContact>>(
               stream: ref.watch(chatControllerProvider).chatGroups(),
               builder: (context, snapshot){
                 if(snapshot.connectionState == ConnectionState.waiting){
@@ -36,18 +41,18 @@ class ContactsList extends ConsumerWidget {
                           InkWell(
                             onTap: () {
                               Navigator.pushNamed(context, MobileChatScreen.routeName, arguments: {
-                                'name' : groupData.groupName,
-                                'uid' : groupData.groupId,
+                                'name' : groupData.name,
+                                'uid' : groupData.contactId,
                                 'isGroupChat' : true,
                                 'numberOfMembers' : groupData.membersUid.length,
-                                'profilePic' : groupData.groupPic,
+                                'profilePic' : groupData.profilePic,
                               });
                             },
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 8.0),
                               child: ListTile(
                                 title: Text(
-                                  groupData.groupName,
+                                  groupData.name,
                                   style: const TextStyle(
                                     fontSize: 18,
                                   ),
@@ -70,7 +75,7 @@ class ContactsList extends ConsumerWidget {
                                 ),
                                 leading: CircleAvatar(
                                   backgroundImage: NetworkImage(
-                                      groupData.groupPic
+                                      groupData.profilePic
                                   ),
                                   radius: 30,
                                 ),
@@ -209,4 +214,8 @@ class ContactsList extends ConsumerWidget {
       ),
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }

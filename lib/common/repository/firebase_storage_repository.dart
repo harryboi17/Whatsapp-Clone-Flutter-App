@@ -15,4 +15,8 @@ class CommonFireBaseStorageRepository{
     String downloadUrl = await snap.ref.getDownloadURL();
     return downloadUrl;
   }
+
+  void deleteFileInFireStorage(String path)async{
+    await firebaseStorage.ref().child(path).delete();
+  }
 }

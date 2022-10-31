@@ -112,7 +112,9 @@ class MyMessageCard extends ConsumerWidget {
                           padding: messageData.type == MessageEnum.text
                               ? const EdgeInsets.only(left: 10, right: 20, top: 5, bottom: 20,)
                               : const EdgeInsets.only(left: 5, top: 5, right: 5, bottom: 20,),
-                          child: DisplayTextFile(message: messageData.text, type: messageData.type, color: Colors.white, size: 16,),
+                          child: messageData.isDeleted
+                              ? DisplayTextFile(message: messageData.text, type: messageData.type, color: Colors.grey, size: 16,)
+                              : DisplayTextFile(message: messageData.text, type: messageData.type, color: Colors.white, size: 16,),
                         ),
                       ],
                     ),
@@ -131,11 +133,13 @@ class MyMessageCard extends ConsumerWidget {
                           const SizedBox(
                             width: 5,
                           ),
-                          Icon(
-                            isSeen ?  Icons.done_all : Icons.done,
-                            size: 16,
-                            color: isSeen ? Colors.blue :  Colors.white60,
-                          ),
+                          !messageData.isDeleted
+                              ? Icon(
+                                isSeen ?  Icons.done_all : Icons.done,
+                                size: 16,
+                                color: isSeen ? Colors.blue :  Colors.white60,
+                              )
+                              : const SizedBox(),
                         ],
                       ),
                     ),

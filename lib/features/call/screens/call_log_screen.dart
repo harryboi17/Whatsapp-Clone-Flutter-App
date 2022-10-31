@@ -8,15 +8,21 @@ import 'package:whatsapp_clone/features/call/controller/call_controller.dart';
 import '../../../common/widgets/loader.dart';
 import '../../../model/call.dart';
 
-class CallLogs extends ConsumerWidget {
+class CallLogs extends ConsumerStatefulWidget {
   const CallLogs({Key? key}) : super(key: key);
 
+  @override
+  ConsumerState<CallLogs> createState() => _CallLogsState();
+}
+
+class _CallLogsState extends ConsumerState<CallLogs> with AutomaticKeepAliveClientMixin {
   void makeCall(WidgetRef ref, BuildContext context, Call callData){
     ref.read(callControllerProvider).makeCall(context, callData.receiverName, callData.receiverId, callData.receiverPic, callData.isGroupCall, callData.isVideoCall);
   }
 
-    @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
     return SingleChildScrollView(
       physics: const ScrollPhysics(),
       child: Column(
@@ -26,8 +32,8 @@ class CallLogs extends ConsumerWidget {
             padding: EdgeInsets.fromLTRB(16,12,0,12),
             child: Text('Recent', style: TextStyle(fontSize: 15, color: Colors.white54),),
           ),
-          FutureBuilder<List<Call>>(
-              future: ref.watch(callControllerProvider).getCallLogs(),
+          StreamBuilder<List<Call>>(
+              stream: ref.watch(callControllerProvider).getCallLogs(),
               builder: (context, snapshot){
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Loader();
@@ -97,4 +103,7 @@ class CallLogs extends ConsumerWidget {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

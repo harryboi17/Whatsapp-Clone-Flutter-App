@@ -22,7 +22,7 @@ class SenderMessageCard extends ConsumerWidget {
     var timeSent = DateFormat.jm().format(messageData.timeSent);
 
     return Container(
-      color: ref.watch(appBarMessageProvider).contains(messageData) ? senderMessageColor.withOpacity(0.5) : Colors.transparent,
+      color: ref.watch(appBarMessageProvider).contains(messageData) ? messageColor.withOpacity(0.5) : Colors.transparent,
       child: InkWell(
         onLongPress: onLongPressed,
         onTap: onPressed,

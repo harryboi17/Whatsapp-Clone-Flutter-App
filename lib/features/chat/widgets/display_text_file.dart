@@ -9,7 +9,7 @@ import '../../../common/enums/message_enum.dart';
 class DisplayTextFile extends StatelessWidget {
   final String message;
   final MessageEnum type;
-  final Color color;
+  final Color? color;
   final double size;
 
   const DisplayTextFile({Key? key, required this.message, required this.type, required this.color, required this.size})

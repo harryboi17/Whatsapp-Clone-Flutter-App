@@ -33,9 +33,11 @@ class CallController {
 
   void makeCall(BuildContext context, String receiverName, String receiverUid,
       String receiverProfilePic, bool isGroupChat, bool isVideoCall) async{
+
     UserModel receiverUserModel;
     isGroupChat ? receiverUserModel = await ref.read(authControllerProvider).userData(auth.currentUser!.uid)
                 : receiverUserModel = await ref.read(authControllerProvider).userData(receiverUid);
+
     ref.read(userDataAuthProvider).whenData((value) async {
       String callId = const Uuid().v1();
       String uid = isGroupChat ? auth.currentUser!.uid : receiverUid;
@@ -112,7 +114,10 @@ class CallController {
     callRepository.notifyPickingUpCall(context: context, callId: callId);
   }
 
-  Future<List<Call>> getCallLogs(){
+  Future<List<Call>> getFutureCallLogs(){
+    return callRepository.getFutureCallLogs(auth.currentUser!.uid);
+  }
+  Stream<List<Call>> getCallLogs(){
     return callRepository.getCallLogs(auth.currentUser!.uid);
   }
 }

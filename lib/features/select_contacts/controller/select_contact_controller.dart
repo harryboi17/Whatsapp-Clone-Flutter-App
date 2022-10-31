@@ -21,4 +21,8 @@ class SelectContactController{
   void selectContact(Contact selectedContact, BuildContext context){
     selectContactRepository.selectContact(selectedContact, context);
   }
+
+  Future<List<Contact>> getContact(){
+    return selectContactRepository.getContacts();
+  }
 }

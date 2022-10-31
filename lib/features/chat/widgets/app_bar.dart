@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:whatsapp_clone/common/enums/message_enum.dart';
+import 'package:whatsapp_clone/features/chat/controller/chat_controller.dart';
+import 'package:whatsapp_clone/features/chat/screens/forward_screen.dart';
+import 'package:whatsapp_clone/features/chat/widgets/delete_message_dialog.dart';
+import 'package:whatsapp_clone/features/chat/widgets/delete_message_dialog2.dart';
+import 'package:whatsapp_clone/model/chat_contact.dart';
 import '../../../common/utils/colors.dart';
 import '../../../common/widgets/loader.dart';
 import '../../../model/group.dart';
@@ -10,6 +18,7 @@ import '../../call/controller/call_controller.dart';
 
 final chatScreenAppBarProvider = StateProvider<bool>((ref) => false);
 final appBarMessageProvider = StateProvider<List<Message>>((ref) => []);
+final isLastMessageSelectedProvider = StateProvider<bool>((ref) => false);
 
 class ChatScreenAppBar extends ConsumerWidget with PreferredSizeWidget {
   final bool isGroupChat;
@@ -119,6 +128,7 @@ class ChatScreenAppBar extends ConsumerWidget with PreferredSizeWidget {
               onPressed: (){
                 ref.read(chatScreenAppBarProvider.state).update((state) => false);
                 ref.refresh(appBarMessageProvider);
+                ref.refresh(isLastMessageSelectedProvider);
               },
               icon: const Icon(Icons.arrow_back),
             ),
@@ -127,16 +137,55 @@ class ChatScreenAppBar extends ConsumerWidget with PreferredSizeWidget {
               Visibility(
                 visible: ref.watch(appBarMessageProvider).length == 1,
                 child: IconButton(
-                    onPressed: (){},
+                    onPressed: () async {
+                      Message message = ref.read(appBarMessageProvider)[0];
+                      if(message.type == MessageEnum.text) {
+                        await Clipboard.setData(ClipboardData(text: message.text));
+                        Fluttertoast.showToast(
+                          msg: "Message copied",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                        );
+                      }else{
+                        Fluttertoast.showToast(
+                          msg: "Non text message cannot be copied",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                        );
+                      }
+                    },
                     icon: const Icon(Icons.copy),
                 ),
               ),
               IconButton(
-                  onPressed: (){},
+                  onPressed: (){
+                    List<Message> messages = ref.read(appBarMessageProvider);
+                    bool isAllMessageSentByMe = true;
+                    String myUid = ref.read(authControllerProvider).uid();
+                    for(var message in messages){
+                      if(message.senderId != myUid){
+                        isAllMessageSentByMe = false;
+                      }
+                    }
+                    showDialog(
+                        context: context,
+                        builder: (context){
+                          if(isAllMessageSentByMe) {
+                            return DeleteMessageDialog(isGroupChat: isGroupChat,);
+                          }
+                          return DeleteMessageDialog2(isGroupChat: isGroupChat);
+                        }
+                    );
+                  },
                   icon: const Icon(Icons.delete),
               ),
               IconButton(
-                  onPressed: (){},
+                  onPressed: ()async{
+                    List<ChatContact> contacts = await ref.read(chatControllerProvider).getSearchedContacts();
+                    Navigator.pushNamed(context, ForwardScreen.routeName, arguments: {
+                      'contacts' : contacts,
+                    });
+                  },
                   icon: const Icon(Icons.arrow_forward),
               ),
             ],

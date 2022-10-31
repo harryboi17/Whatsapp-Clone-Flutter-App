@@ -11,12 +11,17 @@ import '../../../model/status_model.dart';
 import '../controller/status_controller.dart';
 import 'confirm_status_screen.dart';
 
-class StatusContactsScreen extends ConsumerWidget{
+class StatusContactsScreen extends ConsumerStatefulWidget{
   const StatusContactsScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<StatusContactsScreen> createState() => _StatusContactsScreenState();
+}
 
+class _StatusContactsScreenState extends ConsumerState<StatusContactsScreen> with AutomaticKeepAliveClientMixin {
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -142,4 +147,7 @@ class StatusContactsScreen extends ConsumerWidget{
     ),
   );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

@@ -138,7 +138,7 @@ class CallRepository{
     });
   }
 
-  Future<List<Call>> getCallLogs(String uid) async{
+  Future<List<Call>> getFutureCallLogs(String uid) async{
     List<Call> callLogs = [];
     var callSnapshot = await fireStore.collection('users').doc(uid).collection('callLog').orderBy('callTime', descending: true).get();
     for(var doc in callSnapshot.docs){
@@ -146,5 +146,16 @@ class CallRepository{
       callLogs.add(callData);
     }
     return callLogs;
+  }
+
+  Stream<List<Call>> getCallLogs(String uid){
+    return fireStore.collection('users').doc(uid).collection('callLog').orderBy('callTime', descending: true).snapshots().map((event){
+      List<Call> callLogs = [];
+      for(var doc in event.docs){
+        Call callData = Call.fromMap(doc.data());
+        callLogs.add(callData);
+      }
+      return callLogs;
+    });
   }
 }

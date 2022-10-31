@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
+import 'package:whatsapp_clone/model/chat_contact.dart';
 import '../../../common/repository/firebase_storage_repository.dart';
 import '../../../model/group.dart' as model;
 import '../../../model/user_model.dart';
@@ -53,7 +54,8 @@ class GroupRepository{
 
               groupIds.add(groupId);
               uids.add(userData.uid);
-              model.GroupDataModel groupModel = model.GroupDataModel(groupId: groupId, lastMessage: "", unSeenMessageCount: 0, isTyping: false, userTyping: "", timeSent: DateTime.now(), groupName: name, groupPic: profileUrl, membersUid: []);
+              ChatContact groupModel = ChatContact(contactId: groupId, lastMessage: "", unSeenMessageCount: 0, isTyping: false, userTyping: "", timeSent: DateTime.now(),
+                                                    name: name, profilePic: profileUrl, membersUid: [], phoneNumber: '', isGroupChat: true);
               await fireStore.collection('users').doc(userData.uid).collection('groups').doc(groupId).set(groupModel.toMap());
               await fireStore.collection('users').doc(userData.uid).update({
                 'groupId' : groupIds,
@@ -66,7 +68,7 @@ class GroupRepository{
       uids.add(currentUserData!.uid);
       List<String> groupIds = currentUserData.groupId;
       groupIds.add(groupId);
-      model.GroupDataModel groupModel = model.GroupDataModel(groupId: groupId, lastMessage: "", unSeenMessageCount: 0, isTyping: false, userTyping: "", timeSent: DateTime.now(), groupName: name, groupPic: profileUrl, membersUid: []);
+      ChatContact groupModel = ChatContact(contactId: groupId, lastMessage: "", unSeenMessageCount: 0, isTyping: false, userTyping: "", timeSent: DateTime.now(), name: name, profilePic: profileUrl, membersUid: [], phoneNumber: '', isGroupChat: true);
       await fireStore.collection('users').doc(auth.currentUser!.uid).collection('groups').doc(groupId).set(groupModel.toMap());
       await fireStore.collection('users').doc(currentUserData.uid).update({
         'groupId' : groupIds,
