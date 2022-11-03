@@ -27,7 +27,7 @@ class MobileChatScreen extends ConsumerWidget {
       scaffold: WillPopScope(
         onWillPop: ()async{
           if(ref.read(chatScreenAppBarProvider) == true){
-            ref.read(chatScreenAppBarProvider.state).update((state) => false);
+            ref.read(chatScreenAppBarProvider.notifier).update((state) => false);
             ref.refresh(appBarMessageProvider);
             ref.refresh(isLastMessageSelectedProvider);
           }

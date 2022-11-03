@@ -13,6 +13,7 @@ class Message{
   final String repliedTo;
   final MessageEnum repliedMessageType;
   final bool isDeleted;
+  final String senderName;
 
   Message({
     required this.senderId,
@@ -27,6 +28,7 @@ class Message{
     required this.repliedMessageType,
     required this.isDeleted,
     required this.deletedBy,
+    required this.senderName,
   });
 
   Map<String, dynamic> toMap() {
@@ -43,6 +45,7 @@ class Message{
       'repliedTo': repliedTo,
       'repliedMessageType': repliedMessageType.type,
       'isDeleted' : isDeleted,
+      'senderName' : senderName,
     };
   }
 
@@ -60,6 +63,7 @@ class Message{
       repliedTo: map['repliedTo'] ?? '',
       repliedMessageType: (map['repliedMessageType'] as String).toEnum(),
       isDeleted: map['isDeleted'] ?? false,
+      senderName: map['senderName'] ?? '',
     );
   }
 

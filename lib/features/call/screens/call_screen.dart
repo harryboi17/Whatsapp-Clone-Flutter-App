@@ -39,26 +39,29 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: client == null
-            ? const Loader()
-            : SafeArea(
-          child: Stack(
-            children: [
-              AgoraVideoViewer(client: client!),
-              AgoraVideoButtons(
-                client: client!,
-                disconnectButtonChild: IconButton(
-                  onPressed: ()async{
-                    await client!.engine.leaveChannel();
-                    ref.read(callControllerProvider).endCall(callerId: widget.call.callerId, receiverId: widget.call.receiverId, context: context, isGroupChat: widget.isGroupChat);
-                  },
-                  icon: const Icon(Icons.call_end),
+    return WillPopScope(
+      onWillPop: ()async{return false;},
+      child: Scaffold(
+          body: client == null
+              ? const Loader()
+              : SafeArea(
+            child: Stack(
+              children: [
+                AgoraVideoViewer(client: client!),
+                AgoraVideoButtons(
+                  client: client!,
+                  disconnectButtonChild: IconButton(
+                    onPressed: ()async{
+                      await client!.engine.leaveChannel();
+                      ref.read(callControllerProvider).endCall(callerId: widget.call.callerId, receiverId: widget.call.receiverId, context: context, isGroupChat: widget.isGroupChat);
+                    },
+                    icon: const Icon(Icons.call_end),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        )
+              ],
+            ),
+          )
+      ),
     );
   }
 }

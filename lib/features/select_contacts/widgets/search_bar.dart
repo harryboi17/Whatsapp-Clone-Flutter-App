@@ -18,7 +18,10 @@ Future showContactSearchBar(BuildContext context, WidgetRef ref, List<Contact> c
       searchLabel: 'Search...',
       suggestion: DisplayContactsScreen(ref: ref, setContacts: (List<Contact> contactList){},),
       builder: (contact) => InkWell(
-        onTap: () => selectContact(ref, contact, context),
+        onTap: () {
+          Navigator.pop(context);
+          selectContact(ref, contact, context);
+        },
         child: Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
           child: ListTile(

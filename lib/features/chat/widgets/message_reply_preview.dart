@@ -6,11 +6,10 @@ import 'package:whatsapp_clone/features/chat/widgets/display_text_file.dart';
 import '../../../common/provider/message_reply_provider.dart';
 
 class MessageReplyPreview extends ConsumerWidget {
-  final String replyToName;
-  const MessageReplyPreview({Key? key, required this.replyToName}) : super(key: key);
+  const MessageReplyPreview({Key? key}) : super(key: key);
 
   void cancelReply(WidgetRef ref) {
-    ref.read(messageReplyProvider.state).update((state) => null);
+    ref.read(messageReplyProvider.notifier).update((state) => null);
   }
 
   @override
@@ -39,7 +38,7 @@ class MessageReplyPreview extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    messageReply!.isMe ? 'You' : replyToName,
+                    messageReply!.isMe ? 'You' : messageReply.repliedTo,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: micColor

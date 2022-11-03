@@ -35,7 +35,7 @@ class _MobileLayoutScreenState extends ConsumerState<MobileLayoutScreen> with Wi
   late TabController tabBarController;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     tabBarController = TabController(length: 3, vsync: this);
     tabBarController.addListener(() => setState(() {}));

@@ -122,13 +122,13 @@ class ChatListTile extends ConsumerWidget {
 
   void onTilePressed(ChatContact chatContact, WidgetRef ref){
     if(ref.read(chatContactProvider).contains(chatContact)){
-      ref.read(chatContactProvider.state).update((state){
+      ref.read(chatContactProvider.notifier).update((state){
         state.remove(chatContact);
         return state;
       });
-      ref.read(chatContactProvider.state).update((state) => [...state]);
+      ref.read(chatContactProvider.notifier).update((state) => [...state]);
     }else{
-      ref.read(chatContactProvider.state).update((state) => [...state, chatContact]);
+      ref.read(chatContactProvider.notifier).update((state) => [...state, chatContact]);
     }
   }
 

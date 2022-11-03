@@ -19,6 +19,7 @@ Future showContactSearchBar(BuildContext context, WidgetRef ref, List<ChatContac
         padding: const EdgeInsets.only(bottom: 8.0),
         child: InkWell(
           onTap: () {
+            Navigator.pop(context);
             Navigator.pushNamed(context, MobileChatScreen.routeName, arguments: {
               'name': contact.name,
               'uid': contact.contactId,

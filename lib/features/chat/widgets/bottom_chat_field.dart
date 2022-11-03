@@ -167,7 +167,7 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField> with TickerPr
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           isShowMessageReply
-              ? MessageReplyPreview(replyToName: widget.receiverName)
+              ? MessageReplyPreview()
               : const SizedBox(),
           Padding(
             padding: const EdgeInsets.fromLTRB(5,4,3,6),
@@ -183,12 +183,8 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField> with TickerPr
                     controller: _messageController,
                     onChanged: (value){
                         setState((){
-                          if(value.isNotEmpty) {
-                            isShowSendButton = true;
-                          }
-                          else{
-                            isShowSendButton = false;
-                          }
+                          if(value.isNotEmpty) {isShowSendButton = true;}
+                          else{isShowSendButton = false;}
                         });
                         if(value.isNotEmpty) {
                           ref.read(authControllerProvider).setUserTypingStatus(true, widget.receiverUserId, widget.isGroupChat);

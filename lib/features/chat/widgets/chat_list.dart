@@ -46,35 +46,34 @@ class _ChatListState extends ConsumerState<ChatList> {
   }
 
   void onMessageSwipe(
-      {required String message,
-      required bool isMe,
-      required MessageEnum messageEnum}) {
-    ref.read(messageReplyProvider.state).update((state) =>
-        MessageReply(message: message, isMe: isMe, messageEnum: messageEnum));
+      {required String message, required String repliedTo, required bool isMe, required MessageEnum messageEnum})async {
+    var user =  await ref.read(authControllerProvider).userData(repliedTo);
+    ref.read(messageReplyProvider.notifier).update((state) =>
+        MessageReply(message: message, isMe: isMe, messageEnum: messageEnum, repliedTo: user.name));
   }
 
   void onMessageLongPressed(Message message, int index){
     if(ref.read(chatScreenAppBarProvider) == false){
-      ref.read(chatScreenAppBarProvider.state).update((state) => true);
+      ref.read(chatScreenAppBarProvider.notifier).update((state) => true);
       onMessagePressed(message, index);
     }
   }
   void onMessagePressed(Message message, int index){
     if(ref.read(chatScreenAppBarProvider) == true){
       if(index == total-1){
-        ref.read(isLastMessageSelectedProvider.state).update((state) => !state);
+        ref.read(isLastMessageSelectedProvider.notifier).update((state) => !state);
       }
       if(ref.read(appBarMessageProvider).contains(message)){
-        ref.read(appBarMessageProvider.state).update((state){
+        ref.read(appBarMessageProvider.notifier).update((state){
           state.remove(message);
           return state;
         });
         ref.read(appBarMessageProvider.notifier).update((state) => [...state]);
         if(ref.read(appBarMessageProvider).isEmpty){
-          ref.read(chatScreenAppBarProvider.state).update((state) => false);
+          ref.read(chatScreenAppBarProvider.notifier).update((state) => false);
         }
       }else{
-        ref.read(appBarMessageProvider.state).update((state) => [...state, message]);
+        ref.read(appBarMessageProvider.notifier).update((state) => [...state, message]);
       }
 
     }
@@ -125,9 +124,11 @@ class _ChatListState extends ConsumerState<ChatList> {
                       onPressed: () => onMessagePressed(messageData, index),
                       onLongPressed: () => onMessageLongPressed(messageData, index),
                       onSwipe: () => onMessageSwipe(
-                          message: messageData.text,
-                          isMe: true,
-                          messageEnum: messageData.type),
+                        message: messageData.text,
+                        isMe: true,
+                        messageEnum: messageData.type,
+                        repliedTo: messageData.senderId,
+                      ),
                       isSeen: messageData.seenBy.length == widget.numberOfMembers,
                       messageData: messageData,
                     );
@@ -139,8 +140,10 @@ class _ChatListState extends ConsumerState<ChatList> {
                       message: messageData.text,
                       isMe: false,
                       messageEnum: messageData.type,
+                      repliedTo: messageData.senderId,
                     ),
                     messageData: messageData,
+                    isGroupChat: widget.isGroupChat,
                   );
                 },
               );
@@ -188,9 +191,11 @@ class _ChatListState extends ConsumerState<ChatList> {
                       onPressed: () => onMessagePressed(messageData, index),
                       onLongPressed: () => onMessageLongPressed(messageData, index),
                       onSwipe: () => onMessageSwipe(
-                          message: messageData.text,
-                          isMe: true,
-                          messageEnum: messageData.type),
+                        message: messageData.text,
+                        isMe: true,
+                        messageEnum: messageData.type,
+                        repliedTo: messageData.senderId,
+                      ),
                       isSeen: messageData.seenBy.length == 2,
                       messageData: messageData,
                     );
@@ -202,8 +207,10 @@ class _ChatListState extends ConsumerState<ChatList> {
                       message: messageData.text,
                       isMe: false,
                       messageEnum: messageData.type,
+                      repliedTo: messageData.senderId,
                     ),
                     messageData: messageData,
+                    isGroupChat: widget.isGroupChat,
                   );
                 },
               );

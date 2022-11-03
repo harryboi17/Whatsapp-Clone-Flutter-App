@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:search_page/search_page.dart';
-import 'package:whatsapp_clone/features/status/screens/status_contacts_screen.dart';
 import 'package:whatsapp_clone/model/status_model.dart';
 import '../../../common/utils/colors.dart';
 import '../../../common/widgets/circular_border.dart';
@@ -27,6 +26,7 @@ Future showStatusSearchBar(BuildContext context, WidgetRef ref, List<UserStatus>
               children: [
                 InkWell(
                   onTap: () {
+                    Navigator.pop(context);
                     Navigator.pushNamed(context, StatusScreen.routeName, arguments: statusData,);
                   },
                   child: Padding(
@@ -62,6 +62,7 @@ Future showStatusSearchBar(BuildContext context, WidgetRef ref, List<UserStatus>
       ),
       builder: (status) => InkWell(
         onTap: () {
+          Navigator.pop(context);
           Navigator.pushNamed(context, StatusScreen.routeName, arguments: status,);
         },
         child: Padding(

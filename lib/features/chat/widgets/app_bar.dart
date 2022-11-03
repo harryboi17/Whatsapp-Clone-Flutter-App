@@ -62,11 +62,9 @@ class ChatScreenAppBar extends ConsumerWidget with PreferredSizeWidget {
                       subtitle: Text(
                         snapshot.data!.isTyping
                             ? snapshot.data!.userTyping.length > 10
-                                ? snapshot.data!.userTyping.substring(0, 10) +
-                                    ' is typing...'
-                                : snapshot.data!.userTyping + ' is typing...'
-                            : snapshot.data!.membersUid.length.toString() +
-                                ' members',
+                                ? '${snapshot.data!.userTyping.substring(0, 10)} is typing...'
+                                : '${snapshot.data!.userTyping} is typing...'
+                            : '${snapshot.data!.membersUid.length} members',
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.normal,
@@ -126,7 +124,7 @@ class ChatScreenAppBar extends ConsumerWidget with PreferredSizeWidget {
           child: AppBar(
             leading: IconButton(
               onPressed: (){
-                ref.read(chatScreenAppBarProvider.state).update((state) => false);
+                ref.read(chatScreenAppBarProvider.notifier).update((state) => false);
                 ref.refresh(appBarMessageProvider);
                 ref.refresh(isLastMessageSelectedProvider);
               },
@@ -135,7 +133,7 @@ class ChatScreenAppBar extends ConsumerWidget with PreferredSizeWidget {
             title: Text(ref.watch(appBarMessageProvider).length.toString()),
             actions: [
               Visibility(
-                visible: ref.watch(appBarMessageProvider).length == 1,
+                visible: ref.watch(appBarMessageProvider).length == 1 && ref.read(appBarMessageProvider)[0].type == MessageEnum.text,
                 child: IconButton(
                     onPressed: () async {
                       Message message = ref.read(appBarMessageProvider)[0];

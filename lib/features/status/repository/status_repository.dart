@@ -38,6 +38,15 @@ class StatusRepository{
         contacts = await FlutterContacts.getContacts(withProperties: true);
       }
       List<String> uidWhoCanSee = [];
+
+      Status status = Status(
+        uid: uid,
+        photoUrl: imageUrl,
+        createdAt: DateTime.now(),
+        whoCanSee: uidWhoCanSee,
+      );
+      fireStore.collection('status').doc(statusId).set(status.toMap());
+
       for(int i = 0; i < contacts.length; i++){
         if(contacts[i].phones.isNotEmpty && contacts[i].phones[0].number.replaceAll(' ', '')  != auth.currentUser!.phoneNumber) {
           var userDataFireBase = await fireStore.collection('users').where(
@@ -97,14 +106,9 @@ class StatusRepository{
         });
       }
 
-      Status status = Status(
-        uid: uid,
-        photoUrl: imageUrl,
-        createdAt: DateTime.now(),
-        whoCanSee: uidWhoCanSee,
-      );
-
-      fireStore.collection('status').doc(statusId).set(status.toMap());
+      fireStore.collection('status').doc(statusId).update({
+        'whoCanSee' : uidWhoCanSee,
+      });
     }catch(e){
       showSnackBar(context: context, content: e.toString());
     }
@@ -166,8 +170,11 @@ class StatusRepository{
     return fireStore.collection('users').doc(auth.currentUser!.uid).collection('statuses').doc(auth.currentUser!.uid).snapshots().asyncMap((event) async{
       var userData = await fireStore.collection('users').doc(auth.currentUser!.uid).get();
       var user = UserModel.fromMap(userData.data()!);
-      List<Map<String, dynamic>> statusIds = List<Map<String, dynamic>>.from(event.data()!['statusIds']);
 
+      List<Map<String, dynamic>> statusIds = [];
+      if(event.exists && event.data() != null) {
+        statusIds = List<Map<String, dynamic>>.from(event.data()!['statusIds']);
+      }
       List<String> photoUrl = [];
       List<String> listStatusIds = [];
       List<bool> isSeenStatus = [];

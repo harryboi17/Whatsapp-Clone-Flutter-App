@@ -36,7 +36,7 @@ class DeleteMessageDialog2 extends ConsumerWidget {
                 Text('Delete message?', style: TextStyle(color: Colors.white54, fontSize: 15),),
               ],
             ),
-            const SizedBox(height: 15,),
+            const SizedBox(height: 12,),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [

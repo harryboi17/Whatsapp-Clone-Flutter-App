@@ -31,13 +31,13 @@ class SelectGroupListTile extends ConsumerWidget {
   final Contact contact;
   void selectContact(Contact contact, WidgetRef ref) {
     if(ref.read(selectedGroupContacts).contains(contact)){
-      ref.read(selectedGroupContacts.state).update((state){
+      ref.read(selectedGroupContacts.notifier).update((state){
         state.remove(contact);
         return state;
       });
-      ref.read(selectedGroupContacts.state).update((state) => [...state]);
+      ref.read(selectedGroupContacts.notifier).update((state) => [...state]);
     }else{
-      ref.read(selectedGroupContacts.state).update((state) => [...state, contact]);
+      ref.read(selectedGroupContacts.notifier).update((state) => [...state, contact]);
     }
   }
 

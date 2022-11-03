@@ -9,12 +9,13 @@ import '../../../model/message.dart';
 import 'app_bar.dart';
 
 class SenderMessageCard extends ConsumerWidget {
-  const SenderMessageCard({Key? key, required this.onSwipe, required this.onLongPressed, required this.onPressed, required this.messageData})
+  const SenderMessageCard({Key? key, required this.onSwipe, required this.onLongPressed, required this.onPressed, required this.messageData, required this.isGroupChat})
       : super(key: key);
   final VoidCallback onSwipe;
   final VoidCallback onPressed;
   final VoidCallback onLongPressed;
   final Message messageData;
+  final bool isGroupChat;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -108,10 +109,21 @@ class SenderMessageCard extends ConsumerWidget {
                           ),
                         ) else const SizedBox(),
                         Padding(
-                            padding: messageData.type == MessageEnum.text
-                                ? const EdgeInsets.only(left: 10, right: 20, top: 5, bottom: 20,)
-                                : const EdgeInsets.only(left: 5, top: 5, right: 5, bottom: 20),
-                            child: DisplayTextFile(message: messageData.text, type: messageData.type, color: Colors.white, size: 16,)),
+                          padding: messageData.type == MessageEnum.text
+                              ? const EdgeInsets.only(left: 10, right: 20, top: 5, bottom: 20,)
+                              : const EdgeInsets.only(left: 5, top: 5, right: 5, bottom: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              isGroupChat
+                                ? Text(messageData.senderName, style: const TextStyle(color: micColor),)
+                                : const SizedBox(),
+                              messageData.isDeleted
+                                  ? DisplayTextFile(message: messageData.text, type: messageData.type, color: Colors.grey, size: 16,)
+                                  : DisplayTextFile(message: messageData.text, type: messageData.type, color: Colors.white, size: 16,),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                     Positioned(
