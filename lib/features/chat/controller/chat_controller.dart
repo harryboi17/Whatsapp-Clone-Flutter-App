@@ -56,6 +56,7 @@ class ChatController {
           senderUser: value!,
           messageReply : messageReply,
           isGroupChat: isGroupChat,
+          isForwarded: false,
         )
     );
     ref.read(messageReplyProvider.notifier).update((state) => null);
@@ -73,6 +74,7 @@ class ChatController {
           ref: ref,
           messageReply: messageReply,
           isGroupChat : isGroupChat,
+          isForwarded: false,
         )
     );
     ref.read(messageReplyProvider.notifier).update((state) => null);
@@ -87,12 +89,13 @@ class ChatController {
 
     ref.read(userDataAuthProvider).whenData((value) =>
         chatRepository.sendGIFMessage(
-            context: context,
-            gifUrl: newUrl,
-            receiverUserId: receiverUserId,
-            senderUser: value!,
-            messageReply: messageReply,
-            isGroupChat: isGroupChat,
+          context: context,
+          gifUrl: newUrl,
+          receiverUserId: receiverUserId,
+          senderUser: value!,
+          messageReply: messageReply,
+          isGroupChat: isGroupChat,
+          isForwarded: false,
         )
     );
     ref.read(messageReplyProvider.notifier).update((state) => null);

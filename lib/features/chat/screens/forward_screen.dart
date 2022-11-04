@@ -18,7 +18,7 @@ class ForwardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return WillPopScope(
       onWillPop: ()async{
-        ref.refresh(chatContactProvider);
+        ref.invalidate(chatContactProvider);
         Navigator.pop(context);
         return false;
       },
@@ -26,7 +26,7 @@ class ForwardScreen extends ConsumerWidget {
         appBar: AppBar(
           leading: IconButton(
             onPressed: (){
-              ref.refresh(chatContactProvider);
+              ref.invalidate(chatContactProvider);
               Navigator.pop(context);
             },
             icon: const Icon(Icons.arrow_back),
@@ -89,9 +89,9 @@ class ForwardFloatingActionButton extends ConsumerWidget {
   }) : super(key: key);
 
   void reset(WidgetRef ref){
-    ref.refresh(chatContactProvider);
-    ref.refresh(appBarMessageProvider);
-    ref.refresh(chatScreenAppBarProvider);
+    ref.invalidate(chatContactProvider);
+    ref.invalidate(appBarMessageProvider);
+    ref.invalidate(chatScreenAppBarProvider);
   }
 
   @override

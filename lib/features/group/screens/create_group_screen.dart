@@ -51,7 +51,7 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async{
-        ref.refresh(selectedGroupContacts);
+        ref.invalidate(selectedGroupContacts);
         Navigator.pop(context);
         return false;
       },
@@ -60,7 +60,7 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
           title: const Text('Create Group'),
           leading: IconButton(
             onPressed: (){
-              ref.refresh(selectedGroupContacts);
+              ref.invalidate(selectedGroupContacts);
               Navigator.pop(context);
             },
             icon: const Icon(Icons.arrow_back),

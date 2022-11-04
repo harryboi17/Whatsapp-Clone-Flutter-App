@@ -167,7 +167,7 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField> with TickerPr
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           isShowMessageReply
-              ? MessageReplyPreview()
+              ? const MessageReplyPreview()
               : const SizedBox(),
           Padding(
             padding: const EdgeInsets.fromLTRB(5,4,3,6),

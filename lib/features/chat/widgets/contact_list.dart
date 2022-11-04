@@ -62,8 +62,8 @@ class _ContactsListState extends ConsumerState<ContactsList> with AutomaticKeepA
                                   child: Text(
                                     groupData.isTyping
                                         ? groupData.userTyping.length > 15
-                                          ? groupData.userTyping.substring(0,15) + ' is typing...'
-                                          : groupData.userTyping + ' is typing...'
+                                          ? '${groupData.userTyping.substring(0,15)} is typing...'
+                                          : '${groupData.userTyping} is typing...'
                                         : groupData.lastMessage,
                                     style: TextStyle(
                                         fontSize: 15,

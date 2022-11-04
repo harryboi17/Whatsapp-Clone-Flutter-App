@@ -6,7 +6,6 @@
 
  *TO Do*
  1) Non deleted VideoCall when app is Forced Closed
- 2) add isForwarded to DataModel
  3) Call notification when not on chat screen
  4) Video controller for shared video
  5) downloadable photo & video

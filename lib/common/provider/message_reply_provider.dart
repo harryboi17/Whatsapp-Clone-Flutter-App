@@ -6,8 +6,9 @@ class MessageReply{
   final bool isMe;
   final MessageEnum messageEnum;
   final String repliedTo;
+  final String repliedMessageId;
 
-  MessageReply({required this.message, required this.isMe, required this.messageEnum, required this.repliedTo});
+  MessageReply({required this.message, required this.isMe, required this.messageEnum, required this.repliedTo, required this.repliedMessageId});
 }
 
 final messageReplyProvider = StateProvider<MessageReply?>((ref) => null);

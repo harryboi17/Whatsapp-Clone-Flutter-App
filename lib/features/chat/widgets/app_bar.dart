@@ -19,6 +19,7 @@ import '../../call/controller/call_controller.dart';
 final chatScreenAppBarProvider = StateProvider<bool>((ref) => false);
 final appBarMessageProvider = StateProvider<List<Message>>((ref) => []);
 final isLastMessageSelectedProvider = StateProvider<bool>((ref) => false);
+final animationProvider = StateProvider<String>((ref) => '');
 
 class ChatScreenAppBar extends ConsumerWidget with PreferredSizeWidget {
   final bool isGroupChat;
@@ -125,8 +126,8 @@ class ChatScreenAppBar extends ConsumerWidget with PreferredSizeWidget {
             leading: IconButton(
               onPressed: (){
                 ref.read(chatScreenAppBarProvider.notifier).update((state) => false);
-                ref.refresh(appBarMessageProvider);
-                ref.refresh(isLastMessageSelectedProvider);
+                ref.invalidate(appBarMessageProvider);
+                ref.invalidate(isLastMessageSelectedProvider);
               },
               icon: const Icon(Icons.arrow_back),
             ),

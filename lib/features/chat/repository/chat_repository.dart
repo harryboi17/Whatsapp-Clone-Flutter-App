@@ -150,6 +150,7 @@ class ChatRepository {
     required String? receiverUserName,
     required bool isGroupChat,
     required String senderName,
+    required bool isForwarded,
   }) async {
     final message = Message(
       senderId: firebaseAuth.currentUser!.uid,
@@ -165,6 +166,8 @@ class ChatRepository {
       repliedMessageType: messageReply == null ? MessageEnum.text : messageReply.messageEnum,
       isDeleted: false,
       senderName: senderName,
+      repliedToId: messageReply == null ? '' : messageReply.repliedMessageId,
+      isForwarded: isForwarded,
     );
     if(isGroupChat){
       fireStore.collection('groups').doc(receiverUserId).collection('chats').doc(messageId).set(message.toMap());
@@ -196,6 +199,7 @@ class ChatRepository {
     required UserModel senderUser,
     required MessageReply? messageReply,
     required bool isGroupChat,
+    required bool isForwarded,
   }) async {
     try {
       var timeSent = DateTime.now();
@@ -228,6 +232,7 @@ class ChatRepository {
         messageReply: messageReply,
         isGroupChat: isGroupChat,
         senderName: senderUser.name,
+        isForwarded: isForwarded,
       );
     } catch (e) {
       showSnackBar(context: context, content: e.toString());
@@ -243,6 +248,7 @@ class ChatRepository {
     required MessageEnum messageEnum,
     required MessageReply? messageReply,
     required bool isGroupChat,
+    required bool isForwarded,
   }) async {
     try {
       var timeSent = DateTime.now();
@@ -265,7 +271,7 @@ class ChatRepository {
 
       _saveDataToContactsSubCollection(senderUserData: senderUserData, receiverUserData: receiverUserData, text: contactMsg, timeSent: timeSent, receiverUserId: receiverUserId, isGroupChat: isGroupChat);
       _saveMessageToMessageSubCollection(receiverUserId: receiverUserId, text: imageUrl, timeSent: timeSent, messageId: messageId, userName: senderUserData.name,
-          receiverUserName: receiverUserData?.name, messageType: messageEnum, messageReply: messageReply, isGroupChat: isGroupChat, senderName: senderUserData.name);
+          receiverUserName: receiverUserData?.name, messageType: messageEnum, messageReply: messageReply, isGroupChat: isGroupChat, senderName: senderUserData.name, isForwarded: isForwarded);
     } catch (e) {
       showSnackBar(context: context, content: e.toString());
     }
@@ -278,6 +284,7 @@ class ChatRepository {
     required UserModel senderUser,
     required MessageReply? messageReply,
     required bool isGroupChat,
+    required bool isForwarded,
   }) async {
     try {
       var timeSent = DateTime.now();
@@ -309,6 +316,7 @@ class ChatRepository {
         messageReply: messageReply,
         isGroupChat: isGroupChat,
         senderName: senderUser.name,
+        isForwarded: isForwarded,
       );
     } catch (e) {
       showSnackBar(context: context, content: e.toString());
@@ -462,12 +470,12 @@ class ChatRepository {
 
   void forwardMessage(List<ChatContact> chatList, List<Message> messages, BuildContext context, UserModel user){
     for(var message in messages) {
-      MessageReply messageReply = MessageReply(message: "", isMe: true, messageEnum: MessageEnum.text, repliedTo: "");
+      MessageReply messageReply = MessageReply(message: "", isMe: true, messageEnum: MessageEnum.text, repliedTo: "", repliedMessageId: "");
       for(var chat in chatList){
         if(message.type == MessageEnum.text) {
-          sendTextMessage(context: context, text: message.text, receiverUserId: chat.contactId, senderUser: user, messageReply: messageReply, isGroupChat: chat.isGroupChat);
+          sendTextMessage(context: context, text: message.text, receiverUserId: chat.contactId, senderUser: user, messageReply: messageReply, isGroupChat: chat.isGroupChat, isForwarded: true,);
         }else if(message.type == MessageEnum.gif){
-          sendGIFMessage(context: context, gifUrl: message.text, receiverUserId: chat.contactId, senderUser: user, messageReply: messageReply, isGroupChat: chat.isGroupChat);
+          sendGIFMessage(context: context, gifUrl: message.text, receiverUserId: chat.contactId, senderUser: user, messageReply: messageReply, isGroupChat: chat.isGroupChat, isForwarded: true);
         }else{
           forwardFileMessage(context: context, imageUrl: message.text, receiverUserId: chat.contactId, senderUserData: user, messageEnum: message.type, messageReply: messageReply, isGroupChat: chat.isGroupChat);
         }
@@ -499,7 +507,7 @@ class ChatRepository {
 
       _saveDataToContactsSubCollection(senderUserData: senderUserData, receiverUserData: receiverUserData, text: contactMsg, timeSent: timeSent, receiverUserId: receiverUserId, isGroupChat: isGroupChat);
       _saveMessageToMessageSubCollection(receiverUserId: receiverUserId, text: imageUrl, timeSent: timeSent, messageId: messageId, userName: senderUserData.name,
-          receiverUserName: receiverUserData?.name, messageType: messageEnum, messageReply: messageReply, isGroupChat: isGroupChat, senderName: senderUserData.name);
+          receiverUserName: receiverUserData?.name, messageType: messageEnum, messageReply: messageReply, isGroupChat: isGroupChat, senderName: senderUserData.name, isForwarded: true);
     } catch (e) {
       showSnackBar(context: context, content: e.toString());
     }

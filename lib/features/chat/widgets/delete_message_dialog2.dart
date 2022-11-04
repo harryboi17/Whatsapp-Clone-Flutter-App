@@ -10,9 +10,9 @@ class DeleteMessageDialog2 extends ConsumerWidget {
   const DeleteMessageDialog2({Key? key, required this.isGroupChat}) : super(key: key);
 
   void reset(WidgetRef ref, BuildContext context){
-    ref.refresh(appBarMessageProvider);
-    ref.refresh(chatScreenAppBarProvider);
-    ref.refresh(isLastMessageSelectedProvider);
+    ref.invalidate(appBarMessageProvider);
+    ref.invalidate(chatScreenAppBarProvider);
+    ref.invalidate(isLastMessageSelectedProvider);
     Navigator.pop(context);
   }
 

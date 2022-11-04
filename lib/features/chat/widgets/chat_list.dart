@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -25,18 +27,18 @@ class ChatList extends ConsumerStatefulWidget {
 }
 
 class _ChatListState extends ConsumerState<ChatList> {
-  final ScrollController messageController = ScrollController();
+  late final AutoScrollController messageController;
   final String senderUserid = FirebaseAuth.instance.currentUser!.uid;
   int total = 0;
+  List<Message> messages = [];
 
   @override
   void initState() {
+    messageController = AutoScrollController(
+        viewportBoundaryGetter: () =>
+            Rect.fromLTRB(0, 0, 0, MediaQuery.of(context).padding.bottom),
+        axis: Axis.vertical);
     super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      if (messageController.hasClients) {
-        messageController.jumpTo(messageController.position.maxScrollExtent);
-      }
-    });
   }
 
   @override
@@ -46,10 +48,10 @@ class _ChatListState extends ConsumerState<ChatList> {
   }
 
   void onMessageSwipe(
-      {required String message, required String repliedTo, required bool isMe, required MessageEnum messageEnum})async {
+      {required String message, required String repliedTo, required bool isMe, required MessageEnum messageEnum, required String repliedMessageId,})async {
     var user =  await ref.read(authControllerProvider).userData(repliedTo);
     ref.read(messageReplyProvider.notifier).update((state) =>
-        MessageReply(message: message, isMe: isMe, messageEnum: messageEnum, repliedTo: user.name));
+        MessageReply(message: message, isMe: isMe, messageEnum: messageEnum, repliedTo: user.name, repliedMessageId: repliedMessageId));
   }
 
   void onMessageLongPressed(Message message, int index){
@@ -58,6 +60,7 @@ class _ChatListState extends ConsumerState<ChatList> {
       onMessagePressed(message, index);
     }
   }
+
   void onMessagePressed(Message message, int index){
     if(ref.read(chatScreenAppBarProvider) == true){
       if(index == total-1){
@@ -78,6 +81,18 @@ class _ChatListState extends ConsumerState<ChatList> {
 
     }
   }
+
+  void onRepliedMessagePressed(String repliedMessageId)async{
+    for(int i = 0; i < messages.length; i++){
+      if(messages[i].messageId == repliedMessageId){
+        await messageController.scrollToIndex(i, preferPosition: AutoScrollPosition.middle).whenComplete(() =>
+            ref.read(animationProvider.notifier).update((state) => messages[i].messageId)
+        );
+        break;
+      }
+    }
+  }
+  
   @override
   Widget build(BuildContext context){
     return widget.isGroupChat
@@ -90,13 +105,16 @@ class _ChatListState extends ConsumerState<ChatList> {
 
               SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
                 if (messageController.hasClients) {
-                  messageController.jumpTo(messageController.position.maxScrollExtent);
+                  messageController.animateTo(messageController.position.maxScrollExtent, duration:const Duration(milliseconds: 200), curve: Curves.easeOut, );
+                  // messageController.jumpTo(messageController.position.maxScrollExtent);
+                }else{
+                  Timer(const Duration(milliseconds: 400), () => messageController.jumpTo(messageController.position.maxScrollExtent));
                 }
               });
 
               String myUid = ref.read(authControllerProvider).uid();
               ref.read(chatControllerProvider).setUnSeenMessageCount(context: context, senderUserId: "", receiverUserId: widget.receiverUserId, unSeenMessageCount: 0, isGroupChat: true);
-              List<Message> messages = [];
+              messages = [];
               for(var message in snapshot.data!){
                 if(!message.deletedBy.contains(myUid)){
                   messages.add(message);
@@ -120,30 +138,44 @@ class _ChatListState extends ConsumerState<ChatList> {
                   }
 
                   if (messageData.senderId == FirebaseAuth.instance.currentUser!.uid) {
-                    return MyMessageCard(
+                    return AutoScrollTag(
+                      index: index,
+                      key: ValueKey(index),
+                      controller: messageController,
+                      child: MyMessageCard(
+                        onPressed: () => onMessagePressed(messageData, index),
+                        onLongPressed: () => onMessageLongPressed(messageData, index),
+                        onSwipe: () => onMessageSwipe(
+                          message: messageData.text,
+                          isMe: true,
+                          messageEnum: messageData.type,
+                          repliedTo: messageData.senderId,
+                          repliedMessageId: messageData.messageId,
+                        ),
+                        onRepliedMessagePressed : () => onRepliedMessagePressed(messageData.repliedToId),
+                        isSeen: messageData.seenBy.length == widget.numberOfMembers,
+                        messageData: messageData,
+                      ),
+                    );
+                  }
+                  return AutoScrollTag(
+                    index: index,
+                    key: ValueKey(index),
+                    controller: messageController,
+                    child: SenderMessageCard(
                       onPressed: () => onMessagePressed(messageData, index),
                       onLongPressed: () => onMessageLongPressed(messageData, index),
                       onSwipe: () => onMessageSwipe(
                         message: messageData.text,
-                        isMe: true,
+                        isMe: false,
                         messageEnum: messageData.type,
                         repliedTo: messageData.senderId,
+                        repliedMessageId: messageData.messageId,
                       ),
-                      isSeen: messageData.seenBy.length == widget.numberOfMembers,
+                      onRepliedMessagePressed : () => onRepliedMessagePressed(messageData.repliedToId),
                       messageData: messageData,
-                    );
-                  }
-                  return SenderMessageCard(
-                    onPressed: () => onMessagePressed(messageData, index),
-                    onLongPressed: () => onMessageLongPressed(messageData, index),
-                    onSwipe: () => onMessageSwipe(
-                      message: messageData.text,
-                      isMe: false,
-                      messageEnum: messageData.type,
-                      repliedTo: messageData.senderId,
+                      isGroupChat: widget.isGroupChat,
                     ),
-                    messageData: messageData,
-                    isGroupChat: widget.isGroupChat,
                   );
                 },
               );
@@ -158,10 +190,11 @@ class _ChatListState extends ConsumerState<ChatList> {
 
               SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
                 if (messageController.hasClients) {
-                  messageController.jumpTo(messageController.position.maxScrollExtent);
+                  // messageController.jumpTo(messageController.position.maxScrollExtent);
+                  messageController.animateTo(messageController.position.maxScrollExtent, duration:const Duration(milliseconds: 200), curve: Curves.easeOut, );
                 }
               });
-
+              messages = snapshot.data!;
               total = snapshot.data!.length;
               ref.read(chatControllerProvider).setUnSeenMessageCount(context: context, receiverUserId: senderUserid, unSeenMessageCount: 0, senderUserId: widget.receiverUserId, isGroupChat: widget.isGroupChat,);
 
@@ -187,30 +220,44 @@ class _ChatListState extends ConsumerState<ChatList> {
                   }
 
                   if (messageData.senderId == FirebaseAuth.instance.currentUser!.uid) {
-                    return MyMessageCard(
+                    return AutoScrollTag(
+                      index: index,
+                      key: ValueKey(index),
+                      controller: messageController,
+                      child: MyMessageCard(
+                        onPressed: () => onMessagePressed(messageData, index),
+                        onLongPressed: () => onMessageLongPressed(messageData, index),
+                        onSwipe: () => onMessageSwipe(
+                          message: messageData.text,
+                          isMe: true,
+                          messageEnum: messageData.type,
+                          repliedTo: messageData.senderId,
+                          repliedMessageId: messageData.messageId,
+                        ),
+                        onRepliedMessagePressed: () => onRepliedMessagePressed(messageData.repliedToId),
+                        isSeen: messageData.seenBy.length == 2,
+                        messageData: messageData,
+                      ),
+                    );
+                  }
+                  return AutoScrollTag(
+                    index: index,
+                    key: ValueKey(index),
+                    controller: messageController,
+                    child: SenderMessageCard(
                       onPressed: () => onMessagePressed(messageData, index),
                       onLongPressed: () => onMessageLongPressed(messageData, index),
                       onSwipe: () => onMessageSwipe(
                         message: messageData.text,
-                        isMe: true,
+                        isMe: false,
                         messageEnum: messageData.type,
                         repliedTo: messageData.senderId,
+                        repliedMessageId: messageData.messageId,
                       ),
-                      isSeen: messageData.seenBy.length == 2,
+                      onRepliedMessagePressed : () => onRepliedMessagePressed(messageData.repliedToId),
                       messageData: messageData,
-                    );
-                  }
-                  return SenderMessageCard(
-                    onPressed: () => onMessagePressed(messageData, index),
-                    onLongPressed: () => onMessageLongPressed(messageData, index),
-                    onSwipe: () => onMessageSwipe(
-                      message: messageData.text,
-                      isMe: false,
-                      messageEnum: messageData.type,
-                      repliedTo: messageData.senderId,
+                      isGroupChat: widget.isGroupChat,
                     ),
-                    messageData: messageData,
-                    isGroupChat: widget.isGroupChat,
                   );
                 },
               );

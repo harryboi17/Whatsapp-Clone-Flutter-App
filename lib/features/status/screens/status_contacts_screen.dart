@@ -38,6 +38,7 @@ class _StatusContactsScreenState extends ConsumerState<StatusContactsScreen> wit
                     if(snapshot.data!.statusId.isEmpty){
                       File? pickedImage = await pickImageFromGallery(context);
                       if(pickedImage != null){
+                        if(!mounted) return;
                         Navigator.pushNamed(context, ConfirmStatusScreen.routeName, arguments: pickedImage);
                       }
                     }else {

@@ -14,6 +14,8 @@ class Message{
   final MessageEnum repliedMessageType;
   final bool isDeleted;
   final String senderName;
+  final String repliedToId;
+  final bool isForwarded;
 
   Message({
     required this.senderId,
@@ -29,6 +31,8 @@ class Message{
     required this.isDeleted,
     required this.deletedBy,
     required this.senderName,
+    required this.isForwarded,
+    required this.repliedToId,
   });
 
   Map<String, dynamic> toMap() {
@@ -46,6 +50,8 @@ class Message{
       'repliedMessageType': repliedMessageType.type,
       'isDeleted' : isDeleted,
       'senderName' : senderName,
+      'repliedToId' : repliedToId,
+      'isForwarded' : isForwarded,
     };
   }
 
@@ -64,6 +70,8 @@ class Message{
       repliedMessageType: (map['repliedMessageType'] as String).toEnum(),
       isDeleted: map['isDeleted'] ?? false,
       senderName: map['senderName'] ?? '',
+      repliedToId: map['repliedToId'] ?? '',
+      isForwarded: map['isForwarded'] ?? false,
     );
   }
 

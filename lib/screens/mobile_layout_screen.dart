@@ -145,6 +145,7 @@ class _MobileLayoutScreenState extends ConsumerState<MobileLayoutScreen> with Wi
             else if(tabBarController.index == 1){
               File? pickedImage = await pickImageFromGallery(context);
               if(pickedImage != null){
+                if(!mounted) return;
                 Navigator.pushNamed(context, ConfirmStatusScreen.routeName, arguments: pickedImage);
               }
             }

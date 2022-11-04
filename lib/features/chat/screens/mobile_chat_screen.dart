@@ -28,8 +28,8 @@ class MobileChatScreen extends ConsumerWidget {
         onWillPop: ()async{
           if(ref.read(chatScreenAppBarProvider) == true){
             ref.read(chatScreenAppBarProvider.notifier).update((state) => false);
-            ref.refresh(appBarMessageProvider);
-            ref.refresh(isLastMessageSelectedProvider);
+            ref.invalidate(appBarMessageProvider);
+            ref.invalidate(isLastMessageSelectedProvider);
           }
           else{
             Navigator.pop(context);
