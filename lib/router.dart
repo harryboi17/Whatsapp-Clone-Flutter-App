@@ -35,8 +35,10 @@ Route<dynamic> generateRoute(RouteSettings settings){
           builder: (context) => const MobileLayoutScreen()
       );
     case SelectContactScreen.routeName:
+      final arguments = settings.arguments as Map<String, dynamic>;
+      final contacts = arguments['contacts'];
       return MaterialPageRoute(
-          builder: (context) => const SelectContactScreen()
+          builder: (context) => SelectContactScreen(contacts: contacts,)
       );
     case MobileChatScreen.routeName:
       final arguments = settings.arguments as Map<String, dynamic>;
@@ -45,8 +47,9 @@ Route<dynamic> generateRoute(RouteSettings settings){
       final isGroupChat = arguments['isGroupChat'];
       final numberOfMembers = arguments['numberOfMembers'];
       final profilePic = arguments['profilePic'];
+      final fcmToken = arguments['fcmToken'];
       return MaterialPageRoute(
-          builder: (context) => MobileChatScreen(name: name, uid: uid, isGroupChat: isGroupChat, numberOfMembers: numberOfMembers, profilePic: profilePic,)
+          builder: (context) => MobileChatScreen(name: name, uid: uid, isGroupChat: isGroupChat, numberOfMembers: numberOfMembers, profilePic: profilePic, fcmToken: fcmToken,)
       );
     case ConfirmStatusScreen.routeName:
       final file = settings.arguments as File;

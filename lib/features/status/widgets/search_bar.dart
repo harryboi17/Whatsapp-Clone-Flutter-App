@@ -62,8 +62,7 @@ Future showStatusSearchBar(BuildContext context, WidgetRef ref, List<UserStatus>
       ),
       builder: (status) => InkWell(
         onTap: () {
-          Navigator.pop(context);
-          Navigator.pushNamed(context, StatusScreen.routeName, arguments: status,);
+          Navigator.pushReplacementNamed(context, StatusScreen.routeName, arguments: status,);
         },
         child: Padding(
           padding: const EdgeInsets.only(bottom: 8.0),

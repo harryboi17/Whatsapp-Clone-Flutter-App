@@ -9,6 +9,8 @@ class Group {
   final bool isTyping;
   final String userTyping;
   final int unSeenMessageCount;
+  final List<String?> membersFcmToken;
+
   Group({
     required this.senderId,
     required this.name,
@@ -19,7 +21,8 @@ class Group {
     required this.timeSent,
     required this.isTyping,
     required this.unSeenMessageCount,
-    required this.userTyping
+    required this.userTyping,
+    required this.membersFcmToken,
   });
 
   Map<String, dynamic> toMap() {
@@ -34,6 +37,7 @@ class Group {
       'isTyping' : isTyping,
       'unSeenMessageCount': unSeenMessageCount,
       'userTyping' : userTyping,
+      'membersFcmToken' : membersFcmToken,
     };
   }
 
@@ -49,6 +53,7 @@ class Group {
       isTyping: map['isTyping'] ?? false,
       unSeenMessageCount: map['unSeenMessageCount'] ?? 0,
       userTyping: map['userTyping'] ?? '',
+      membersFcmToken: List<String>.from(map['membersFcmToken']),
     );
   }
 }

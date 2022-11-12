@@ -60,7 +60,9 @@ dependencies:
   fluttertoast: ^8.1.1
   flutter_launcher_icons: ^0.10.0
   firebase_messaging: ^14.0.3
+  flutter_local_notifications: ^12.0.3
   scroll_to_index: ^3.0.1
+  http: ^0.13.5
 
 dev_dependencies:
   flutter_test:

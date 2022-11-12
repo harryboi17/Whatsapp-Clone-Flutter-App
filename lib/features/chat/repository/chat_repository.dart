@@ -7,6 +7,7 @@ import 'package:whatsapp_clone/common/enums/message_enum.dart';
 import 'package:whatsapp_clone/common/provider/message_reply_provider.dart';
 import 'package:whatsapp_clone/common/repository/firebase_storage_repository.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
+import 'package:whatsapp_clone/features/notification/repository/notification_repository.dart';
 import 'package:whatsapp_clone/model/chat_contact.dart';
 import 'package:whatsapp_clone/model/message.dart';
 import 'package:whatsapp_clone/model/user_model.dart';
@@ -103,11 +104,12 @@ class ChatRepository {
 
   void _saveDataToContactsSubCollection({
     required UserModel senderUserData,
-    required UserModel? receiverUserData,
+    required String receiverUserName,
     required String text,
     required DateTime timeSent,
     required String receiverUserId,
     required bool isGroupChat,
+    required String? fcmToken,
   }) async {
     if(isGroupChat){
       fireStore.collection('groups').doc(receiverUserId).update({
@@ -117,11 +119,18 @@ class ChatRepository {
 
       var groupData = await fireStore.collection('groups').doc(receiverUserId).get();
       List<String> membersId = List<String>.from(groupData.data()!['membersUid']);
-      for(var uid in membersId){
-        fireStore.collection('users').doc(uid).collection('groups').doc(receiverUserId).update({
+      List<String?> membersFcmToken = List<String?>.from(groupData.data()!['membersFcmToken']);
+      for(int i = 0; i < membersId.length; i++){
+        fireStore.collection('users').doc(membersId[i]).collection('groups').doc(receiverUserId).update({
           'lastMessage' : text,
           'timeSent' : DateTime.now().millisecondsSinceEpoch,
         });
+
+        var contactSnapshot = await fireStore.collection('users').doc(membersId[i]).collection('groups').doc(receiverUserId).get();
+        ChatContact chatContact = ChatContact.fromMap(contactSnapshot.data()!);
+        if(membersId[i] != firebaseAuth.currentUser!.uid && !chatContact.isActiveOnScreen){
+          NotificationRepository.sendNotification(title: receiverUserName, message: '${senderUserData.name}: $text', token: membersFcmToken[i], collapseKey: receiverUserId);
+        }
       }
     }
     else {
@@ -136,6 +145,11 @@ class ChatRepository {
         'lastMessage' : text,
         'timeSent' : timeSent.millisecondsSinceEpoch,
       });
+      var contactSnapshot = await fireStore.collection('users').doc(receiverUserId).collection('chats').doc(firebaseAuth.currentUser!.uid).get();
+      ChatContact chatContact = ChatContact.fromMap(contactSnapshot.data()!);
+      // if(!chatContact.isActiveOnScreen) {
+        NotificationRepository.sendNotification(title: senderUserData.name, message: text, token: fcmToken, collapseKey: receiverUserId);
+      // }
     }
   }
 
@@ -196,30 +210,27 @@ class ChatRepository {
     required BuildContext context,
     required String text,
     required String receiverUserId,
+    required String receiverUserName,
     required UserModel senderUser,
     required MessageReply? messageReply,
     required bool isGroupChat,
     required bool isForwarded,
+    required String? fcmToken,
   }) async {
     try {
       var timeSent = DateTime.now();
-      UserModel? receiverUserData;
-
-      if(!isGroupChat) {
-        var userDataMap = await fireStore.collection('users').doc(receiverUserId).get();
-        receiverUserData = UserModel.fromMap(userDataMap.data()!);
-      }
 
       var messageId = const Uuid().v1();
 
       _saveDataToContactsSubCollection(
         senderUserData: senderUser,
-        receiverUserData: receiverUserData,
+        receiverUserName: receiverUserName,
         // text: text.length > 30 ? "${text.substring(0,30)}..." : text,
         text: text,
         timeSent: timeSent,
         receiverUserId: receiverUserId,
         isGroupChat: isGroupChat,
+        fcmToken: fcmToken,
       );
       _saveMessageToMessageSubCollection(
         receiverUserId: receiverUserId,
@@ -227,7 +238,7 @@ class ChatRepository {
         timeSent: timeSent,
         messageId: messageId,
         userName: senderUser.name,
-        receiverUserName: receiverUserData?.name,
+        receiverUserName: receiverUserName,
         messageType: MessageEnum.text,
         messageReply: messageReply,
         isGroupChat: isGroupChat,
@@ -243,12 +254,14 @@ class ChatRepository {
     required BuildContext context,
     required File file,
     required String receiverUserId,
+    required String receiverUserName,
     required UserModel senderUserData,
     required ProviderRef ref,
     required MessageEnum messageEnum,
     required MessageReply? messageReply,
     required bool isGroupChat,
     required bool isForwarded,
+    required String? fcmToken,
   }) async {
     try {
       var timeSent = DateTime.now();
@@ -260,18 +273,12 @@ class ChatRepository {
               'chat/${messageEnum.type}/${senderUserData.uid}/$receiverUserId/$messageId',
               file);
 
-      UserModel? receiverUserData;
-      if(!isGroupChat) {
-        var userDataMap =
-        await fireStore.collection('users').doc(receiverUserId).get();
-        receiverUserData = UserModel.fromMap(userDataMap.data()!);
-      }
-
       String contactMsg = displayMessageForMessageType(messageEnum);
 
-      _saveDataToContactsSubCollection(senderUserData: senderUserData, receiverUserData: receiverUserData, text: contactMsg, timeSent: timeSent, receiverUserId: receiverUserId, isGroupChat: isGroupChat);
+      _saveDataToContactsSubCollection(senderUserData: senderUserData, receiverUserName: receiverUserName, text: contactMsg,
+          timeSent: timeSent, receiverUserId: receiverUserId, isGroupChat: isGroupChat, fcmToken: fcmToken);
       _saveMessageToMessageSubCollection(receiverUserId: receiverUserId, text: imageUrl, timeSent: timeSent, messageId: messageId, userName: senderUserData.name,
-          receiverUserName: receiverUserData?.name, messageType: messageEnum, messageReply: messageReply, isGroupChat: isGroupChat, senderName: senderUserData.name, isForwarded: isForwarded);
+          receiverUserName: receiverUserName, messageType: messageEnum, messageReply: messageReply, isGroupChat: isGroupChat, senderName: senderUserData.name, isForwarded: isForwarded);
     } catch (e) {
       showSnackBar(context: context, content: e.toString());
     }
@@ -281,29 +288,25 @@ class ChatRepository {
     required BuildContext context,
     required String gifUrl,
     required String receiverUserId,
+    required String receiverUserName,
     required UserModel senderUser,
     required MessageReply? messageReply,
     required bool isGroupChat,
     required bool isForwarded,
+    required String? fcmToken,
   }) async {
     try {
       var timeSent = DateTime.now();
-      UserModel? receiverUserData;
-
-      if(!isGroupChat) {
-        var userDataMap = await fireStore.collection('users').doc(receiverUserId).get();
-        receiverUserData = UserModel.fromMap(userDataMap.data()!);
-      }
-
       var messageId = const Uuid().v1();
 
       _saveDataToContactsSubCollection(
         senderUserData: senderUser,
-        receiverUserData: receiverUserData,
+        receiverUserName: receiverUserName,
         text: '👾 GIF',
         timeSent: timeSent,
         receiverUserId: receiverUserId,
         isGroupChat: isGroupChat,
+        fcmToken: fcmToken,
       );
       _saveMessageToMessageSubCollection(
         receiverUserId: receiverUserId,
@@ -311,7 +314,7 @@ class ChatRepository {
         timeSent: timeSent,
         messageId: messageId,
         userName: senderUser.name,
-        receiverUserName: receiverUserData?.name,
+        receiverUserName: receiverUserName,
         messageType: MessageEnum.gif,
         messageReply: messageReply,
         isGroupChat: isGroupChat,
@@ -473,11 +476,11 @@ class ChatRepository {
       MessageReply messageReply = MessageReply(message: "", isMe: true, messageEnum: MessageEnum.text, repliedTo: "", repliedMessageId: "");
       for(var chat in chatList){
         if(message.type == MessageEnum.text) {
-          sendTextMessage(context: context, text: message.text, receiverUserId: chat.contactId, senderUser: user, messageReply: messageReply, isGroupChat: chat.isGroupChat, isForwarded: true,);
+          sendTextMessage(context: context, text: message.text, receiverUserId: chat.contactId, senderUser: user, messageReply: messageReply, isGroupChat: chat.isGroupChat, isForwarded: true, fcmToken: chat.fcmToken, receiverUserName: chat.name);
         }else if(message.type == MessageEnum.gif){
-          sendGIFMessage(context: context, gifUrl: message.text, receiverUserId: chat.contactId, senderUser: user, messageReply: messageReply, isGroupChat: chat.isGroupChat, isForwarded: true);
+          sendGIFMessage(context: context, gifUrl: message.text, receiverUserId: chat.contactId, senderUser: user, messageReply: messageReply, isGroupChat: chat.isGroupChat, isForwarded: true, fcmToken: chat.fcmToken, receiverUserName: chat.name);
         }else{
-          forwardFileMessage(context: context, imageUrl: message.text, receiverUserId: chat.contactId, senderUserData: user, messageEnum: message.type, messageReply: messageReply, isGroupChat: chat.isGroupChat);
+          forwardFileMessage(context: context, imageUrl: message.text, receiverUserId: chat.contactId, senderUserData: user, messageEnum: message.type, messageReply: messageReply, isGroupChat: chat.isGroupChat, fcmToken: chat.fcmToken, receiverUserName: chat.name);
         }
       }
     }
@@ -487,29 +490,37 @@ class ChatRepository {
     required BuildContext context,
     required String imageUrl,
     required String receiverUserId,
+    required String receiverUserName,
     required UserModel senderUserData,
     required MessageEnum messageEnum,
     required MessageReply? messageReply,
     required bool isGroupChat,
+    required String? fcmToken
   }) async {
     try {
       var timeSent = DateTime.now();
       var messageId = const Uuid().v1();
 
-      UserModel? receiverUserData;
-      if(!isGroupChat) {
-        var userDataMap =
-        await fireStore.collection('users').doc(receiverUserId).get();
-        receiverUserData = UserModel.fromMap(userDataMap.data()!);
-      }
-
       String contactMsg = displayMessageForMessageType(messageEnum);
 
-      _saveDataToContactsSubCollection(senderUserData: senderUserData, receiverUserData: receiverUserData, text: contactMsg, timeSent: timeSent, receiverUserId: receiverUserId, isGroupChat: isGroupChat);
+      _saveDataToContactsSubCollection(senderUserData: senderUserData, receiverUserName: receiverUserName, text: contactMsg
+          , timeSent: timeSent, receiverUserId: receiverUserId, isGroupChat: isGroupChat, fcmToken: fcmToken);
       _saveMessageToMessageSubCollection(receiverUserId: receiverUserId, text: imageUrl, timeSent: timeSent, messageId: messageId, userName: senderUserData.name,
-          receiverUserName: receiverUserData?.name, messageType: messageEnum, messageReply: messageReply, isGroupChat: isGroupChat, senderName: senderUserData.name, isForwarded: true);
+          receiverUserName: receiverUserName, messageType: messageEnum, messageReply: messageReply, isGroupChat: isGroupChat, senderName: senderUserData.name, isForwarded: true);
     } catch (e) {
       showSnackBar(context: context, content: e.toString());
+    }
+  }
+
+  void setChatContactActivity(String contactId, bool isActive, bool isGroupChat){
+    if(isGroupChat){
+      fireStore.collection('users').doc(firebaseAuth.currentUser!.uid).collection('groups').doc(contactId).update({
+        'isActiveOnScreen' : isActive,
+      });
+    }else{
+      fireStore.collection('users').doc(firebaseAuth.currentUser!.uid).collection('chats').doc(contactId).update({
+        'isActiveOnScreen' : isActive,
+      });
     }
   }
 }

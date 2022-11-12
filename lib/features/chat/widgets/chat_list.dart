@@ -105,8 +105,7 @@ class _ChatListState extends ConsumerState<ChatList> {
 
               SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
                 if (messageController.hasClients) {
-                  messageController.animateTo(messageController.position.maxScrollExtent, duration:const Duration(milliseconds: 200), curve: Curves.easeOut, );
-                  // messageController.jumpTo(messageController.position.maxScrollExtent);
+                  messageController.animateTo(messageController.position.maxScrollExtent+200, duration:const Duration(milliseconds: 200), curve: Curves.easeOut, );
                 }else{
                   Timer(const Duration(milliseconds: 400), () => messageController.jumpTo(messageController.position.maxScrollExtent));
                 }
@@ -190,8 +189,7 @@ class _ChatListState extends ConsumerState<ChatList> {
 
               SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
                 if (messageController.hasClients) {
-                  // messageController.jumpTo(messageController.position.maxScrollExtent);
-                  messageController.animateTo(messageController.position.maxScrollExtent, duration:const Duration(milliseconds: 200), curve: Curves.easeOut, );
+                  messageController.animateTo(messageController.position.maxScrollExtent+200, duration:const Duration(milliseconds: 200), curve: Curves.easeOut, );
                 }
               });
               messages = snapshot.data!;

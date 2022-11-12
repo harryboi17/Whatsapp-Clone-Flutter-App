@@ -44,6 +44,13 @@ class ChatScreenAppBar extends ConsumerWidget with PreferredSizeWidget {
     return Stack(
       children: [
         AppBar(
+          leading: IconButton(
+            onPressed: (){
+              ref.read(chatControllerProvider).setChatContactActivity(uid, false, isGroupChat);
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.arrow_back),
+          ),
           leadingWidth: 20,
           backgroundColor: appBarColor,
           title: isGroupChat

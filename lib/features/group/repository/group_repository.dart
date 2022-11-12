@@ -41,6 +41,7 @@ class GroupRepository{
       var groupId = const Uuid().v1();
       List<String> uids = [];
       String profileUrl = await ref.read(commonFireBaseStorageRepositoryProvider).storeFileToFirebase('group/$groupId', profilePic);
+      List<String?> membersFcmToken = [];
       for(int i = 0; i < selectedContact.length; i++){
         if(selectedContact[i].phones.isNotEmpty){
             var userCollection = await fireStore.collection('users')
@@ -54,10 +55,11 @@ class GroupRepository{
 
               groupIds.add(groupId);
               uids.add(userData.uid);
+              membersFcmToken.add(userData.token);
               ChatContact groupModel = ChatContact(contactId: groupId, lastMessage: "", unSeenMessageCount: 0, isTyping: false, userTyping: "", timeSent: DateTime.now(),
-                                                    name: name, profilePic: profileUrl, membersUid: [], phoneNumber: '', isGroupChat: true);
-              await fireStore.collection('users').doc(userData.uid).collection('groups').doc(groupId).set(groupModel.toMap());
-              await fireStore.collection('users').doc(userData.uid).update({
+                                                    name: name, profilePic: profileUrl, membersUid: [], phoneNumber: '', isGroupChat: true, fcmToken: '', isActiveOnScreen: false,);
+              fireStore.collection('users').doc(userData.uid).collection('groups').doc(groupId).set(groupModel.toMap());
+              fireStore.collection('users').doc(userData.uid).update({
                 'groupId' : groupIds,
               });
             }
@@ -68,23 +70,26 @@ class GroupRepository{
       uids.add(currentUserData!.uid);
       List<String> groupIds = currentUserData.groupId;
       groupIds.add(groupId);
-      ChatContact groupModel = ChatContact(contactId: groupId, lastMessage: "", unSeenMessageCount: 0, isTyping: false, userTyping: "", timeSent: DateTime.now(), name: name, profilePic: profileUrl, membersUid: [], phoneNumber: '', isGroupChat: true);
+      membersFcmToken.add(currentUserData.token);
+      ChatContact groupModel = ChatContact(contactId: groupId, lastMessage: "", unSeenMessageCount: 0, isTyping: false, userTyping: "",
+          timeSent: DateTime.now(), name: name, profilePic: profileUrl, membersUid: [], phoneNumber: '', isGroupChat: true, fcmToken: '', isActiveOnScreen: false,);
       await fireStore.collection('users').doc(auth.currentUser!.uid).collection('groups').doc(groupId).set(groupModel.toMap());
       await fireStore.collection('users').doc(currentUserData.uid).update({
         'groupId' : groupIds,
       });
 
       model.Group group = model.Group(
-          senderId: auth.currentUser!.uid,
-          name: name,
-          groupId: groupId,
-          lastMessage: '',
-          groupPic: profileUrl,
-          membersUid: uids,
-          timeSent: DateTime.now(),
-          isTyping: false,
-          unSeenMessageCount: 0,
-          userTyping: '',
+        senderId: auth.currentUser!.uid,
+        name: name,
+        groupId: groupId,
+        lastMessage: '',
+        groupPic: profileUrl,
+        membersUid: uids,
+        timeSent: DateTime.now(),
+        isTyping: false,
+        unSeenMessageCount: 0,
+        userTyping: '',
+        membersFcmToken: membersFcmToken,
       );
 
       await fireStore.collection('groups').doc(groupId).set(group.toMap());

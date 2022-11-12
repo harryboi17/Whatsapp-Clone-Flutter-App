@@ -5,9 +5,10 @@ class UserModel{
   final bool isOnline;
   final bool isTyping;
   final String phoneNumber;
+  final String? token;
   final List<String> groupId;
 
-  UserModel({required this.name, required this.uid, required this.profilePic, required this.isOnline, required this.phoneNumber, required this.groupId, required this.isTyping});
+  UserModel({required this.name, required this.uid, required this.profilePic, required this.isOnline, required this.phoneNumber, required this.groupId, required this.isTyping, required this.token});
   Map<String, dynamic> toMap() {
     return {
       'name': name,
@@ -17,6 +18,7 @@ class UserModel{
       'isTyping' : isTyping,
       'phoneNumber': phoneNumber,
       'groupId': groupId,
+      'token' : token,
     };
   }
 
@@ -29,6 +31,7 @@ class UserModel{
       isTyping: map['isTyping'] ?? false,
       phoneNumber: map['phoneNumber'] ?? '',
       groupId: List<String>.from(map['groupId']),
+      token: map['token'] ?? '',
     );
   }
 

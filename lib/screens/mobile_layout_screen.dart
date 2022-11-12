@@ -13,10 +13,10 @@ import 'package:whatsapp_clone/features/select_contacts/controller/select_contac
 import 'package:whatsapp_clone/features/select_contacts/screens/select_contacts_screen.dart';
 import 'package:whatsapp_clone/features/status/screens/confirm_status_screen.dart';
 import 'package:whatsapp_clone/features/status/widgets/search_bar.dart';
-
 import '../features/call/controller/call_controller.dart';
 import '../features/chat/controller/chat_controller.dart';
 import '../features/chat/widgets/contact_list.dart';
+import '../features/notification/repository/notification_repository.dart';
 import '../features/status/controller/status_controller.dart';
 import '../features/status/screens/status_contacts_screen.dart';
 import '../model/call.dart';
@@ -33,6 +33,7 @@ class MobileLayoutScreen extends ConsumerStatefulWidget {
 
 class _MobileLayoutScreenState extends ConsumerState<MobileLayoutScreen> with WidgetsBindingObserver, TickerProviderStateMixin{
   late TabController tabBarController;
+  late final List<Contact> contacts;
 
   @override
   void initState(){
@@ -40,6 +41,16 @@ class _MobileLayoutScreenState extends ConsumerState<MobileLayoutScreen> with Wi
     tabBarController = TabController(length: 3, vsync: this);
     tabBarController.addListener(() => setState(() {}));
     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      loadContacts();
+    });
+
+    ref.read(notificationRepositoryProvider).storeNotificationToken();
+    ref.read(notificationRepositoryProvider).initializeCloudMessaging(context);
+  }
+
+  void loadContacts()async{
+    contacts = await ref.read(selectContactControllerProvider).getContact();
   }
 
   @override
@@ -85,8 +96,8 @@ class _MobileLayoutScreenState extends ConsumerState<MobileLayoutScreen> with Wi
               icon: const Icon(Icons.search, color: Colors.grey),
               onPressed: ()async {
                 if(tabBarController.index == 0){
-                  List<ChatContact> contacts = await ref.read(chatControllerProvider).getSearchedContacts();
-                  showContactSearchBar(context, ref, contacts);
+                  List<ChatContact> chatContacts = await ref.read(chatControllerProvider).getSearchedContacts();
+                  showContactSearchBar(context, ref, chatContacts);
                 }
                 else if(tabBarController.index == 1){
                   List<UserStatus> statuses = await ref.read(statusControllerProvider).getSearchedStatus();
@@ -103,8 +114,7 @@ class _MobileLayoutScreenState extends ConsumerState<MobileLayoutScreen> with Wi
               itemBuilder: (context) => [
                 PopupMenuItem(
                   child: const Text('Create Group'),
-                  onTap: ()async{
-                    List<Contact> contacts = await ref.read(selectContactControllerProvider).getContact();
+                  onTap: (){
                     Future(() => Navigator.pushNamed(context, CreateGroupScreen.routeName, arguments: {
                       'contacts' : contacts,
                     }));
@@ -140,7 +150,9 @@ class _MobileLayoutScreenState extends ConsumerState<MobileLayoutScreen> with Wi
         floatingActionButton: FloatingActionButton(
           onPressed: () async{
             if(tabBarController.index == 0){
-              Navigator.pushNamed(context, SelectContactScreen.routeName);
+              Navigator.pushNamed(context, SelectContactScreen.routeName, arguments: {
+                'contacts' : contacts,
+              });
             }
             else if(tabBarController.index == 1){
               File? pickedImage = await pickImageFromGallery(context);

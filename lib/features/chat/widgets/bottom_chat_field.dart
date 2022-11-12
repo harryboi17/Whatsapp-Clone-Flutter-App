@@ -18,7 +18,8 @@ class BottomChatField extends ConsumerStatefulWidget {
   final String receiverUserId;
   final String receiverName;
   final bool isGroupChat;
-  const BottomChatField({Key? key, required this.receiverUserId, required this.receiverName, required this.isGroupChat}) : super(key: key);
+  final String? fcmToken;
+  const BottomChatField({Key? key, required this.receiverUserId, required this.receiverName, required this.isGroupChat, required this.fcmToken}) : super(key: key);
 
   @override
   ConsumerState<BottomChatField> createState() => _BottomChatFieldState();
@@ -42,6 +43,15 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField> with TickerPr
     typingTimer = Timer(const Duration(milliseconds: 1), () { });
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _messageController.dispose();
+    _soundRecorder!.closeRecorder();
+    typingTimer.cancel();
+    isRecorderInit = false;
+  }
+
   void openAudio() async{
       final status = await Permission.microphone.request();
       if (status != PermissionStatus.granted) {
@@ -53,7 +63,7 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField> with TickerPr
 
   void sendTextMessage() async{
     if(isShowSendButton){
-      ref.read(chatControllerProvider).sendTextMessage(context, _messageController.text.trim(), widget.receiverUserId, widget.isGroupChat);
+      ref.read(chatControllerProvider).sendTextMessage(context, _messageController.text.trim(), widget.receiverUserId, widget.isGroupChat, widget.fcmToken, widget.receiverName);
       setState(() {
         _messageController.text = '';
       });
@@ -91,7 +101,7 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField> with TickerPr
   }
 
   void sendFileMessage(File file, MessageEnum messageEnum){
-    ref.read(chatControllerProvider).sendFileMessage(context, file, widget.receiverUserId, messageEnum, widget.isGroupChat);
+    ref.read(chatControllerProvider).sendFileMessage(context, file, widget.receiverUserId, messageEnum, widget.isGroupChat, widget.fcmToken, widget.receiverName);
   }
 
   void selectImage() async{
@@ -136,15 +146,6 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField> with TickerPr
   void startTypingAnimation(WidgetRef ref){
     typingTimer = Timer( const Duration(seconds: 1),
             () => ref.read(authControllerProvider).setUserTypingStatus(false, widget.receiverUserId, widget.isGroupChat));
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _messageController.dispose();
-    _soundRecorder!.closeRecorder();
-    typingTimer.cancel();
-    isRecorderInit = false;
   }
 
   @override
@@ -259,6 +260,8 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField> with TickerPr
                   receiverUserId: widget.receiverUserId,
                   popGifScreen: hideEmojiContainer,
                   isGroupChat: widget.isGroupChat,
+                  fcmToken: widget.fcmToken,
+                  receiverUserName: widget.receiverName,
                 )
               : const SizedBox(),
         ],

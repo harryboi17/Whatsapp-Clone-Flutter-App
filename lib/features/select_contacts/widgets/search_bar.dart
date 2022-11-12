@@ -16,7 +16,7 @@ Future showContactSearchBar(BuildContext context, WidgetRef ref, List<Contact> c
     delegate: SearchPage(
       items: contacts,
       searchLabel: 'Search...',
-      suggestion: DisplayContactsScreen(ref: ref, setContacts: (List<Contact> contactList){},),
+      suggestion: DisplayContactsScreen(ref: ref, contactList: contacts,),
       builder: (contact) => InkWell(
         onTap: () {
           Navigator.pop(context);

@@ -6,6 +6,7 @@ import 'package:whatsapp_clone/features/chat/widgets/contact_list.dart';
 import 'package:whatsapp_clone/model/chat_contact.dart';
 
 import '../../../common/utils/colors.dart';
+import '../controller/chat_controller.dart';
 import '../screens/mobile_chat_screen.dart';
 
 Future showContactSearchBar(BuildContext context, WidgetRef ref, List<ChatContact> contacts){
@@ -19,13 +20,14 @@ Future showContactSearchBar(BuildContext context, WidgetRef ref, List<ChatContac
         padding: const EdgeInsets.only(bottom: 8.0),
         child: InkWell(
           onTap: () {
-            Navigator.pop(context);
-            Navigator.pushNamed(context, MobileChatScreen.routeName, arguments: {
+            ref.read(chatControllerProvider).setChatContactActivity(contact.contactId, true, contact.isGroupChat);
+            Navigator.pushReplacementNamed(context, MobileChatScreen.routeName, arguments: {
               'name': contact.name,
               'uid': contact.contactId,
               'isGroupChat': contact.isGroupChat,
               'numberOfMembers': contact.membersUid.length,
               'profilePic': contact.profilePic,
+              'fcmToken' : contact.fcmToken,
             });
           },
           child: ListTile(

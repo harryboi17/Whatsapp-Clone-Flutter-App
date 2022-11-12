@@ -80,7 +80,7 @@ class AuthRepository {
       profilePic ??= await getImageFileFromAssets('empty_profile_image.jpg');
       photoUrl = await ref.read(commonFireBaseStorageRepositoryProvider).storeFileToFirebase('profilePic/$uid', profilePic);
 
-      var user = UserModel(name: name, uid: uid, profilePic: photoUrl, isOnline: true, phoneNumber: auth.currentUser!.phoneNumber!, groupId: [], isTyping: false);
+      var user = UserModel(name: name, uid: uid, profilePic: photoUrl, isOnline: true, phoneNumber: auth.currentUser!.phoneNumber!, groupId: [], isTyping: false, token: '');
       await fireStore.collection('users').doc(uid).set(user.toMap());
       Navigator.pushNamedAndRemoveUntil(context, MobileLayoutScreen.routeName, (route) => false);
     }
@@ -143,5 +143,11 @@ class AuthRepository {
 
   String uid(){
     return auth.currentUser!.uid;
+  }
+
+  void updateUserToken(String? token){
+    fireStore.collection('users').doc(auth.currentUser!.uid).set({
+      'token' : token,
+    }, SetOptions(merge: true));
   }
 }

@@ -60,4 +60,8 @@ class AuthController{
   String uid(){
     return authRepository.uid();
   }
+
+  void updateUserToken(String? token){
+    return authRepository.updateUserToken(token);
+  }
 }

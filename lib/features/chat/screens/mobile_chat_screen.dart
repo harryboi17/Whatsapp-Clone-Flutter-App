@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/features/call/screens/call_pickup_screen.dart';
+import 'package:whatsapp_clone/features/chat/controller/chat_controller.dart';
 import '../widgets/app_bar.dart';
 import '../widgets/bottom_chat_field.dart';
 import '../widgets/chat_list.dart';
@@ -12,13 +13,15 @@ class MobileChatScreen extends ConsumerWidget {
   final bool isGroupChat;
   final int numberOfMembers;
   final String profilePic;
+  final String? fcmToken;
 
   const MobileChatScreen({Key? key,
       required this.name,
       required this.uid,
       required this.isGroupChat,
       required this.numberOfMembers,
-      required this.profilePic
+      required this.profilePic,
+      required this.fcmToken,
   }) : super(key: key);
 
   @override
@@ -32,6 +35,7 @@ class MobileChatScreen extends ConsumerWidget {
             ref.invalidate(isLastMessageSelectedProvider);
           }
           else{
+            ref.read(chatControllerProvider).setChatContactActivity(uid, false, isGroupChat);
             Navigator.pop(context);
           }
           return false;
@@ -51,6 +55,7 @@ class MobileChatScreen extends ConsumerWidget {
                 receiverUserId: uid,
                 receiverName: name,
                 isGroupChat : isGroupChat,
+                fcmToken: fcmToken,
               ),
             ],
           ),

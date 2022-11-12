@@ -46,7 +46,7 @@ class ChatController {
     return chatRepository.getSearchedContacts();
   }
 
-  void sendTextMessage(BuildContext context, String text, String receiverUserId, bool isGroupChat) {
+  void sendTextMessage(BuildContext context, String text, String receiverUserId, bool isGroupChat, String? fcmToken, String receiverUserName) {
     final messageReply = ref.read(messageReplyProvider);
     ref.read(userDataAuthProvider).whenData((value) =>
         chatRepository.sendTextMessage(
@@ -57,12 +57,14 @@ class ChatController {
           messageReply : messageReply,
           isGroupChat: isGroupChat,
           isForwarded: false,
+          fcmToken: fcmToken,
+          receiverUserName: receiverUserName
         )
     );
     ref.read(messageReplyProvider.notifier).update((state) => null);
   }
 
-  void sendFileMessage(BuildContext context, File file, String receiverUserId, MessageEnum messageEnum, bool isGroupChat) {
+  void sendFileMessage(BuildContext context, File file, String receiverUserId, MessageEnum messageEnum, bool isGroupChat, String? fcmToken, String receiverUserName) {
     final messageReply = ref.read(messageReplyProvider);
     ref.read(userDataAuthProvider).whenData((value) =>
         chatRepository.sendFileMessage(
@@ -75,12 +77,14 @@ class ChatController {
           messageReply: messageReply,
           isGroupChat : isGroupChat,
           isForwarded: false,
+          fcmToken: fcmToken,
+          receiverUserName: receiverUserName,
         )
     );
     ref.read(messageReplyProvider.notifier).update((state) => null);
   }
 
-  void sendGIFMessage(BuildContext context, String gifUrl, String receiverUserId, bool isGroupChat){
+  void sendGIFMessage(BuildContext context, String gifUrl, String receiverUserId, bool isGroupChat, String? fcmToken, String receiverUserName){
     // https://i.giphy.com/media/fn2kee68mheQgMtz1k
     int gifUrlPartIndex = gifUrl.lastIndexOf('-') + 1;
     String gifUrlPart = gifUrl.substring(gifUrlPartIndex);
@@ -96,6 +100,8 @@ class ChatController {
           messageReply: messageReply,
           isGroupChat: isGroupChat,
           isForwarded: false,
+          fcmToken: fcmToken,
+          receiverUserName: receiverUserName,
         )
     );
     ref.read(messageReplyProvider.notifier).update((state) => null);
@@ -147,5 +153,9 @@ class ChatController {
     List<ChatContact> chatList = ref.read(chatContactProvider);
     UserModel? user = await ref.read(authControllerProvider).getUserData();
     chatRepository.forwardMessage(chatList, messages, context, user!);
+  }
+
+  void setChatContactActivity(String contactId, bool isActive, bool isGroupChat){
+    chatRepository.setChatContactActivity(contactId, isActive, isGroupChat);
   }
 }

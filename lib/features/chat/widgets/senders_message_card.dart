@@ -23,16 +23,15 @@ class SenderMessageCard extends ConsumerStatefulWidget {
   ConsumerState<SenderMessageCard> createState() => _SenderMessageCardState();
 }
 
-class _SenderMessageCardState extends ConsumerState<SenderMessageCard> with TickerProviderStateMixin {
+class _SenderMessageCardState extends ConsumerState<SenderMessageCard> with SingleTickerProviderStateMixin{
   late final AnimationController animationController;
-  late Animation<double> animation1;
-  late Animation<double> animation2;
+  late Animation<Color?> animationColor;
+
   @override
   void initState() {
     // TODO: implement initState
-    animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
-    animation1 = Tween<double>(begin: 1.0, end: 1.5).animate(animationController);
-    animation2 = Tween<double>(begin: 1, end: 0.2).animate(animationController);
+    animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
+    animationColor = Tween<Color?>(begin: messageColor.withOpacity(0.5), end: Colors.transparent).animate(animationController);
     super.initState();
   }
   @override
@@ -43,16 +42,22 @@ class _SenderMessageCardState extends ConsumerState<SenderMessageCard> with Tick
 
   @override
   Widget build(BuildContext context) {
+    var color = ref.watch(appBarMessageProvider).contains(widget.messageData) ? messageColor.withOpacity(0.5) : Colors.transparent;
     final isReplying = widget.messageData.repliedMessage.isNotEmpty;
     var timeSent = DateFormat.jm().format(widget.messageData.timeSent);
 
     if(ref.watch(animationProvider) == widget.messageData.messageId){
-      animationController.forward().whenComplete(() => animationController.reset());
-      ref.invalidate(animationProvider);
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        animationController.forward().whenComplete((){
+          animationController.reverse();
+          setState(() {});
+        });
+        ref.invalidate(animationProvider);
+      });
     }
 
     return Container(
-      color: ref.watch(appBarMessageProvider).contains(widget.messageData) ? messageColor.withOpacity(0.5) : Colors.transparent,
+      color: animationController.isAnimating ? animationColor.value ?? Colors.transparent : color,
       child: InkWell(
         onLongPress: widget.onLongPressed,
         onTap: widget.onPressed,
@@ -65,117 +70,111 @@ class _SenderMessageCardState extends ConsumerState<SenderMessageCard> with Tick
                 maxWidth: MediaQuery.of(context).size.width / 1.25,
                 minWidth: MediaQuery.of(context).size.width / 3.5,
               ),
-              child: AnimatedBuilder(
-                animation: animationController.view,
-                builder: (BuildContext context, Widget? child) {
-                  return FadeTransition(opacity: animation2, child: child,);
-                },
-                child: Card(
-                  elevation: 1,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  color: senderMessageColor,
-                  margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                  child: Stack(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (isReplying) InkWell(
-                            onTap: widget.onRepliedMessagePressed,
-                            child: Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                    maxHeight: MediaQuery.of(context).size.height/13.5
+              child: Card(
+                elevation: 1,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                color: senderMessageColor,
+                margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                child: Stack(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (isReplying) InkWell(
+                          onTap: widget.onRepliedMessagePressed,
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                  maxHeight: MediaQuery.of(context).size.height/13.5
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.fromLTRB(8, 3, 3, 8),
+                                decoration: const BoxDecoration(
+                                  color: Colors.black12,
+                                  border: Border(
+                                      left: BorderSide(color: micColor, width: 3.5)),
                                 ),
-                                child: Container(
-                                  padding: const EdgeInsets.fromLTRB(8, 3, 3, 8),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.black12,
-                                    border: Border(
-                                        left: BorderSide(color: micColor, width: 3.5)),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Flexible(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              widget.messageData.repliedTo,
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: micColor
-                                              ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            widget.messageData.repliedTo,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: micColor
                                             ),
-                                            const SizedBox(height: 4,),
-                                            widget.messageData.repliedMessageType == MessageEnum.text
-                                                ? Text(
-                                                  widget.messageData.repliedMessage,
-                                                  style: TextStyle(
-                                                    color: Colors.grey,
-                                                    fontSize: MediaQuery.of(context).size.height/64,
-                                                  ),
-                                                  maxLines: 2,
-                                                  overflow: TextOverflow.ellipsis,
-                                                )
-                                                : DisplayTextFile(
-                                                  message: displayMessageForMessageType(widget.messageData.repliedMessageType),
-                                                  type: MessageEnum.text,
+                                          ),
+                                          const SizedBox(height: 4,),
+                                          widget.messageData.repliedMessageType == MessageEnum.text
+                                              ? Text(
+                                                widget.messageData.repliedMessage,
+                                                style: TextStyle(
                                                   color: Colors.grey,
-                                                  size: 14,
+                                                  fontSize: MediaQuery.of(context).size.height/64,
                                                 ),
-                                          ],
-                                        ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              )
+                                              : DisplayTextFile(
+                                                message: displayMessageForMessageType(widget.messageData.repliedMessageType),
+                                                type: MessageEnum.text,
+                                                color: Colors.grey,
+                                                size: 14,
+                                              ),
+                                        ],
                                       ),
-                                      if(widget.messageData.repliedMessageType != MessageEnum.text && widget.messageData.repliedMessageType != MessageEnum.audio)...[
-                                        const SizedBox(width: 15),
-                                        Container(
-                                          color: Colors.transparent,
-                                          width: MediaQuery.of(context).size.width/8,
-                                          height: 50,
-                                          child: DisplayTextFile(message: widget.messageData.repliedMessage, type: widget.messageData.repliedMessageType, size: 14, color: Colors.grey,),
-                                        ),
-                                      ]
-                                    ],
-                                  ),
+                                    ),
+                                    if(widget.messageData.repliedMessageType != MessageEnum.text && widget.messageData.repliedMessageType != MessageEnum.audio)...[
+                                      const SizedBox(width: 15),
+                                      Container(
+                                        color: Colors.transparent,
+                                        width: MediaQuery.of(context).size.width/8,
+                                        height: 50,
+                                        child: DisplayTextFile(message: widget.messageData.repliedMessage, type: widget.messageData.repliedMessageType, size: 14, color: Colors.grey,),
+                                      ),
+                                    ]
+                                  ],
                                 ),
                               ),
                             ),
-                          ) else const SizedBox(),
-                          Padding(
-                            padding: widget.messageData.type == MessageEnum.text
-                                ? const EdgeInsets.only(left: 10, right: 20, top: 5, bottom: 20,)
-                                : const EdgeInsets.only(left: 5, top: 5, right: 5, bottom: 20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                widget.isGroupChat
-                                  ? Text(widget.messageData.senderName, style: const TextStyle(color: micColor),)
-                                  : const SizedBox(),
-                                widget.messageData.isDeleted
-                                    ? DisplayTextFile(message: widget.messageData.text, type: widget.messageData.type, color: Colors.grey, size: 16,)
-                                    : DisplayTextFile(message: widget.messageData.text, type: widget.messageData.type, color: Colors.white, size: 16,),
-                              ],
-                            ),
                           ),
-                        ],
-                      ),
-                      Positioned(
-                        bottom: 2,
-                        right: 10,
-                        child: Text(
-                          timeSent,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
+                        ) else const SizedBox(),
+                        Padding(
+                          padding: widget.messageData.type == MessageEnum.text
+                              ? const EdgeInsets.only(left: 10, right: 20, top: 5, bottom: 20,)
+                              : const EdgeInsets.only(left: 5, top: 5, right: 5, bottom: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              widget.isGroupChat
+                                ? Text(widget.messageData.senderName, style: const TextStyle(color: micColor),)
+                                : const SizedBox(),
+                              widget.messageData.isDeleted
+                                  ? DisplayTextFile(message: widget.messageData.text, type: widget.messageData.type, color: Colors.grey, size: 16,)
+                                  : DisplayTextFile(message: widget.messageData.text, type: widget.messageData.type, color: Colors.white, size: 16,),
+                            ],
                           ),
                         ),
+                      ],
+                    ),
+                    Positioned(
+                      bottom: 2,
+                      right: 10,
+                      child: Text(
+                        timeSent,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

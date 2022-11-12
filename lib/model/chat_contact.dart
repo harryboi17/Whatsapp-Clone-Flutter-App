@@ -5,9 +5,11 @@ class ChatContact{
   final DateTime timeSent;
   final String lastMessage;
   final bool isTyping;
+  final bool isActiveOnScreen;
   final String userTyping;
   final int unSeenMessageCount;
   final String phoneNumber;
+  final String? fcmToken;
   final bool isGroupChat;
   final List<String> membersUid;
 
@@ -18,11 +20,13 @@ class ChatContact{
     required this.timeSent,
     required this.lastMessage,
     required this.isTyping,
+    required this.isActiveOnScreen,
     required this.unSeenMessageCount,
     required this.phoneNumber,
     required this.isGroupChat,
     required this.membersUid,
     required this.userTyping,
+    required this.fcmToken,
   });
 
   Map<String, dynamic> toMap() {
@@ -38,6 +42,8 @@ class ChatContact{
       'isGroupChat' : isGroupChat,
       'membersUid' : membersUid,
       'userTyping' : userTyping,
+      'fcmToken' : fcmToken,
+      'isActiveOnScreen' : isActiveOnScreen,
     };
   }
 
@@ -49,11 +55,13 @@ class ChatContact{
       timeSent: DateTime.fromMillisecondsSinceEpoch(map['timeSent']),
       lastMessage: map['lastMessage'] ?? '',
       isTyping: map['isTyping'] ?? false,
+      isActiveOnScreen: map['isActiveOnScreen'] ?? false,
       unSeenMessageCount: map['unSeenMessageCount'] ?? 0,
       phoneNumber: map['phoneNumber'] ?? '',
       isGroupChat: map['isGroupChat'] ?? false,
       membersUid: List<String>.from(map['membersUid']),
       userTyping: map['userTyping'] as String,
+      fcmToken: map['fcmToken'],
     );
   }
 }

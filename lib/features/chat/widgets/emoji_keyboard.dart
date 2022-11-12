@@ -8,9 +8,12 @@ import '../../../common/utils/colors.dart';
 class CustomEmojiKeyboard extends ConsumerStatefulWidget {
   final Function addEmojiToTextField;
   final String receiverUserId;
+  final String receiverUserName;
   final Function popGifScreen;
   final bool isGroupChat;
-  const CustomEmojiKeyboard({Key? key, required this.addEmojiToTextField, required this.receiverUserId, required this.popGifScreen, required this.isGroupChat}) : super(key: key);
+  final String? fcmToken;
+  const CustomEmojiKeyboard({Key? key, required this.addEmojiToTextField, required this.receiverUserId, required this.popGifScreen,
+    required this.isGroupChat, required this.fcmToken, required this.receiverUserName}) : super(key: key);
 
   @override
   ConsumerState<CustomEmojiKeyboard> createState() => _CustomEmojiKeyboardState();
@@ -35,7 +38,7 @@ class _CustomEmojiKeyboardState extends ConsumerState<CustomEmojiKeyboard> with 
   void selectGif() async{
     final gif = await pickGIF(context);
     if(gif != null){
-      ref.read(chatControllerProvider).sendGIFMessage(context, gif.url, widget.receiverUserId, widget.isGroupChat);
+      ref.read(chatControllerProvider).sendGIFMessage(context, gif.url, widget.receiverUserId, widget.isGroupChat, widget.fcmToken, widget.receiverUserName);
     }
     widget.popGifScreen();
   }

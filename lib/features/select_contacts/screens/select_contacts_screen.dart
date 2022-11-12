@@ -6,12 +6,8 @@ import 'display_contacts_screens.dart';
 
 class SelectContactScreen extends ConsumerWidget {
   static const String routeName = '/select-contact';
-  const SelectContactScreen({Key? key}) : super(key: key);
-  static List<Contact> contacts = [];
-
-  void setContacts(List<Contact> contactList) {
-    contacts = contactList;
-  }
+  final List<Contact> contacts;
+  const SelectContactScreen({Key? key, required this.contacts}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,7 +31,7 @@ class SelectContactScreen extends ConsumerWidget {
       ),
       body: DisplayContactsScreen(
         ref: ref,
-        setContacts: setContacts,
+        contactList: contacts,
       ),
     );
   }

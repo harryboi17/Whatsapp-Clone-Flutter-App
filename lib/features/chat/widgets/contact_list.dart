@@ -40,12 +40,14 @@ class _ContactsListState extends ConsumerState<ContactsList> with AutomaticKeepA
                         children: [
                           InkWell(
                             onTap: () {
+                              ref.read(chatControllerProvider).setChatContactActivity(groupData.contactId, true, groupData.isGroupChat);
                               Navigator.pushNamed(context, MobileChatScreen.routeName, arguments: {
                                 'name' : groupData.name,
                                 'uid' : groupData.contactId,
                                 'isGroupChat' : true,
                                 'numberOfMembers' : groupData.membersUid.length,
                                 'profilePic' : groupData.profilePic,
+                                'fcmToken' : groupData.fcmToken,
                               });
                             },
                             child: Padding(
@@ -133,12 +135,14 @@ class _ContactsListState extends ConsumerState<ContactsList> with AutomaticKeepA
                         children: [
                           InkWell(
                             onTap: () {
+                              ref.read(chatControllerProvider).setChatContactActivity(chatContactData.contactId, true, chatContactData.isGroupChat);
                               Navigator.pushNamed(context, MobileChatScreen.routeName, arguments: {
                                 'name' : chatContactData.name,
                                 'uid' : chatContactData.contactId,
                                 'isGroupChat' : false,
                                 'numberOfMembers' : 0,
                                 'profilePic' : chatContactData.profilePic,
+                                'fcmToken' : chatContactData.fcmToken,
                               });
                             },
                             child: Padding(

@@ -53,6 +53,8 @@ class SelectContactRepository{
             isGroupChat: false,
             membersUid: [myData.uid],
             userTyping: "",
+            fcmToken: myData.token,
+            isActiveOnScreen: false,
           );
           fireStore.collection('users').doc(userData.uid).collection('chats').doc(myData.uid).set(receiverChatContact.toMap());
 
@@ -70,15 +72,17 @@ class SelectContactRepository{
             isGroupChat: false,
             membersUid: [userData.uid],
             userTyping: "",
+            fcmToken: userData.token,
+            isActiveOnScreen: true,
           );
           fireStore.collection('users').doc(myData.uid).collection('chats').doc(userData.uid).set(senderChatContact.toMap());
-          Navigator.pop(context);
-          Navigator.pushNamed(context, MobileChatScreen.routeName, arguments: {
+          Navigator.pushReplacementNamed(context, MobileChatScreen.routeName, arguments: {
                 'name' : selectedContact.displayName,
                 'uid' : userData.uid,
                 'isGroupChat' : false,
                 'numberOfMembers' : 1,
                 'profilePic' : userData.profilePic,
+                'fcmToken' : userData.token,
               }
           );
         }
